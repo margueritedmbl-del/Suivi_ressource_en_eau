@@ -5,12 +5,46 @@ export type EpicollectFetchResult = {
   firstUrl: string;
   lastUrl: string;
   perPage: number;
+  retries: number;
+  rateLimitWaitMs: number;
 };
 
 export type EpicollectFetchOptions = {
   perPage?: number;
   maxPages?: number;
+  pageDelayMs?: number;
+  maxRetries?: number;
+  baseRetryDelayMs?: number;
+  maxRetryDelayMs?: number;
 };
+
+const globalRateState = globalThis as typeof globalThis & {
+  __psoreEpicollectNextRequestAt?: number;
+};
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function throttleRequests(minDelayMs: number) {
+  const now = Date.now();
+  const nextAt = globalRateState.__psoreEpicollectNextRequestAt || 0;
+  if (nextAt > now) await sleep(nextAt - now);
+  globalRateState.__psoreEpicollectNextRequestAt = Date.now() + minDelayMs;
+}
+
+function parseRetryAfter(value: string | null) {
+  if (!value) return null;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds) && seconds >= 0) return Math.ceil(seconds * 1000);
+  const when = Date.parse(value);
+  if (Number.isFinite(when)) return Math.max(0, when - Date.now());
+  return null;
+}
+
+function jitter(ms: number) {
+  return ms + Math.floor(Math.random() * Math.max(250, Math.round(ms * 0.2)));
+}
 
 function asAbsoluteUrl(value: string, base: URL) {
   return value.startsWith("http") ? value : new URL(value, base.origin).toString();
@@ -19,14 +53,7 @@ function asAbsoluteUrl(value: string, base: URL) {
 function nextFromPayload(payload: any) {
   const meta = payload?.meta || payload?.data?.meta || {};
   const links = payload?.links || payload?.data?.links || {};
-  return (
-    links?.next ||
-    meta?.next ||
-    meta?.next_page_url ||
-    payload?.next_page_url ||
-    payload?.next ||
-    null
-  );
+  return links?.next || meta?.next || meta?.next_page_url || payload?.next_page_url || payload?.next || null;
 }
 
 function pageInfo(payload: any) {
@@ -39,13 +66,21 @@ function pageInfo(payload: any) {
 
 function isEntriesLimitError(status: number, body: string) {
   const normalized = body.toLowerCase();
-  return (
-    status === 400 &&
-    (normalized.includes("ec5_335") ||
-      normalized.includes("max allowed entries limit exceeded") ||
-      normalized.includes("lower `per_page`") ||
-      normalized.includes("lower per_page"))
+  return status === 400 && (
+    normalized.includes("ec5_335") ||
+    normalized.includes("max allowed entries limit exceeded") ||
+    normalized.includes("lower `per_page`") ||
+    normalized.includes("lower per_page")
   );
+}
+
+function isRateLimitError(status: number, body: string) {
+  const normalized = body.toLowerCase();
+  return status === 429 || normalized.includes("ec5_255") || normalized.includes("too many requests");
+}
+
+function isTransientServerError(status: number) {
+  return status === 408 || status === 425 || status === 500 || status === 502 || status === 503 || status === 504;
 }
 
 function buildPerPageCandidates(requested: number) {
@@ -53,43 +88,71 @@ function buildPerPageCandidates(requested: number) {
     .map((value) => Math.max(1, Math.min(100, Math.trunc(value))))
     .filter((value, index, array) => array.indexOf(value) === index)
     .sort((a, b) => b - a);
-
-  // Ne jamais tester une valeur supérieure à celle demandée.
   return candidates.filter((value) => value <= requested);
 }
 
-async function fetchPageWithAdaptiveLimit(url: URL, requestedPerPage: number) {
+type PageFetchStats = { retries: number; rateLimitWaitMs: number };
+
+async function fetchWithRetry(
+  requestUrl: string,
+  options: Required<Pick<EpicollectFetchOptions, "pageDelayMs" | "maxRetries" | "baseRetryDelayMs" | "maxRetryDelayMs">>,
+  stats: PageFetchStats
+) {
+  for (let attempt = 0; attempt <= options.maxRetries; attempt++) {
+    await throttleRequests(options.pageDelayMs);
+    const response = await fetch(requestUrl, {
+      cache: "no-store",
+      headers: { Accept: "application/json", "User-Agent": "PSORE-Epicollect-Synchronizer/2.4.4" },
+    });
+
+    if (response.ok) return response;
+
+    const text = await response.text().catch(() => "");
+    const lastError = `Epicollect API error ${response.status}: ${response.statusText}${text ? ` - ${text.slice(0, 500)}` : ""}`;
+    const retryable = isRateLimitError(response.status, text) || isTransientServerError(response.status);
+    if (!retryable || attempt >= options.maxRetries) {
+      if (isRateLimitError(response.status, text)) {
+        throw new Error(`${lastError}. Limite temporaire Epicollect5 atteinte. Attendez quelques minutes avant une nouvelle synchronisation.`);
+      }
+      throw new Error(lastError);
+    }
+
+    const retryAfterMs = parseRetryAfter(response.headers.get("retry-after"));
+    const exponential = Math.min(options.maxRetryDelayMs, options.baseRetryDelayMs * 2 ** attempt);
+    const waitMs = jitter(Math.max(retryAfterMs || 0, exponential));
+    stats.retries += 1;
+    stats.rateLimitWaitMs += waitMs;
+    await sleep(waitMs);
+  }
+
+  throw new Error("Échec inattendu de la requête Epicollect5.");
+}
+
+async function fetchPageWithAdaptiveLimit(
+  url: URL,
+  requestedPerPage: number,
+  options: Required<Pick<EpicollectFetchOptions, "pageDelayMs" | "maxRetries" | "baseRetryDelayMs" | "maxRetryDelayMs">>,
+  stats: PageFetchStats
+) {
   const candidates = buildPerPageCandidates(requestedPerPage);
   let lastError = "";
 
   for (const perPage of candidates) {
     const requestUrl = new URL(url.toString());
-    // Forcer la valeur, y compris lorsque le lien `next` d'Epicollect contient déjà per_page.
     requestUrl.searchParams.set("per_page", String(perPage));
 
-    const response = await fetch(requestUrl.toString(), { cache: "no-store" });
-    if (response.ok) {
-      return {
-        payload: await response.json(),
-        requestUrl: requestUrl.toString(),
-        perPage,
-      };
-    }
-
-    const text = await response.text().catch(() => "");
-    lastError = `Epicollect API error ${response.status}: ${response.statusText}${
-      text ? ` - ${text.slice(0, 500)}` : ""
-    }`;
-
-    if (!isEntriesLimitError(response.status, text)) {
-      throw new Error(lastError);
+    try {
+      const response = await fetchWithRetry(requestUrl.toString(), options, stats);
+      return { payload: await response.json(), requestUrl: requestUrl.toString(), perPage };
+    } catch (error: any) {
+      lastError = error?.message || String(error);
+      if (!lastError.toLowerCase().includes("ec5_335") && !lastError.toLowerCase().includes("max allowed entries limit exceeded")) {
+        throw error;
+      }
     }
   }
 
-  throw new Error(
-    `${lastError || "Epicollect refuse la taille de page."} ` +
-      "La synchronisation a essayé automatiquement per_page=50, 25, 20, 10 et 5."
-  );
+  throw new Error(`${lastError || "Epicollect refuse la taille de page."} La synchronisation a essayé automatiquement per_page=50, 25, 20, 10 et 5.`);
 }
 
 export async function fetchEpicollectEntries(
@@ -100,27 +163,31 @@ export async function fetchEpicollectEntries(
 
   let effectivePerPage = Math.max(1, Math.min(options.perPage || 20, 100));
   const maxPages = options.maxPages || 1000;
+  const retryOptions = {
+    pageDelayMs: Math.max(500, options.pageDelayMs ?? 1500),
+    maxRetries: Math.max(0, options.maxRetries ?? 4),
+    baseRetryDelayMs: Math.max(1000, options.baseRetryDelayMs ?? 10_000),
+    maxRetryDelayMs: Math.max(5000, options.maxRetryDelayMs ?? 60_000),
+  };
   const entries: any[] = [];
   const requestedUrls: string[] = [];
   const seen = new Set<string>();
+  const stats: PageFetchStats = { retries: 0, rateLimitWaitMs: 0 };
   let next: string | null = url;
   let pageCounter = 0;
   let lastUrl = url;
 
   while (next && pageCounter < maxPages) {
     const u = new URL(next);
-    if (!u.searchParams.has("page") && pageCounter > 0) {
-      u.searchParams.set("page", String(pageCounter + 1));
-    }
+    if (!u.searchParams.has("page") && pageCounter > 0) u.searchParams.set("page", String(pageCounter + 1));
 
-    // La clé de déduplication ignore per_page, car cette valeur peut être réduite automatiquement.
     const seenUrl = new URL(u.toString());
     seenUrl.searchParams.delete("per_page");
     const seenKey = seenUrl.toString();
     if (seen.has(seenKey)) break;
     seen.add(seenKey);
 
-    const page = await fetchPageWithAdaptiveLimit(u, effectivePerPage);
+    const page = await fetchPageWithAdaptiveLimit(u, effectivePerPage, retryOptions, stats);
     effectivePerPage = page.perPage;
     requestedUrls.push(page.requestUrl);
     lastUrl = page.requestUrl;
@@ -133,7 +200,6 @@ export async function fetchEpicollectEntries(
     const payloadNext = nextFromPayload(payload);
     if (payloadNext) {
       const nextUrl = new URL(asAbsoluteUrl(String(payloadNext), u));
-      // Empêcher le lien renvoyé par l'API de réintroduire une taille de page trop grande.
       nextUrl.searchParams.set("per_page", String(effectivePerPage));
       next = nextUrl.toString();
       continue;
@@ -147,7 +213,6 @@ export async function fetchEpicollectEntries(
       continue;
     }
 
-    // Repli pour les réponses sans métadonnées de pagination.
     if (pageEntries.length >= effectivePerPage) {
       u.searchParams.set("page", String(pageCounter + 1));
       u.searchParams.set("per_page", String(effectivePerPage));
@@ -158,9 +223,7 @@ export async function fetchEpicollectEntries(
     next = null;
   }
 
-  if (pageCounter >= maxPages && next) {
-    throw new Error(`Synchronisation arrêtée : limite de ${maxPages} pages atteinte.`);
-  }
+  if (pageCounter >= maxPages && next) throw new Error(`Synchronisation arrêtée : limite de ${maxPages} pages atteinte.`);
 
   return {
     entries,
@@ -169,6 +232,8 @@ export async function fetchEpicollectEntries(
     firstUrl: requestedUrls[0] || url,
     lastUrl,
     perPage: effectivePerPage,
+    retries: stats.retries,
+    rateLimitWaitMs: stats.rateLimitWaitMs,
   };
 }
 

@@ -64,7 +64,14 @@ export async function syncTable(source: EpicollectSource, table: string, mapper:
   };
 
   try {
-    const fetched = await fetchEpicollectEntries(source.api_url, { perPage: 20, maxPages: 2000 });
+    const fetched = await fetchEpicollectEntries(source.api_url, {
+      perPage: 20,
+      maxPages: 2000,
+      pageDelayMs: 1500,
+      maxRetries: 4,
+      baseRetryDelayMs: 10_000,
+      maxRetryDelayMs: 60_000,
+    });
     const rows = fetched.entries.map(mapper).filter((row) => row && row.source_entry_id);
     const skipped = fetched.entries.length - rows.length;
 
@@ -90,7 +97,7 @@ export async function syncTable(source: EpicollectSource, table: string, mapper:
 
     await writeSyncLog(
       result,
-      `${source.libelle} : ${upserted}/${fetched.entries.length} enregistrement(s) synchronisé(s), ${fetched.pages} page(s), per_page=${fetched.perPage}.`,
+      `${source.libelle} : ${upserted}/${fetched.entries.length} enregistrement(s) synchronisé(s), ${fetched.pages} page(s), per_page=${fetched.perPage}, ${fetched.retries} nouvelle(s) tentative(s), attente anti-limite=${Math.round(fetched.rateLimitWaitMs / 1000)} s.`,
       source.api_url
     );
 
