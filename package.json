@@ -1,6 +1,6 @@
 {
-  "name": "psore-v4-1-storage",
-  "version": "4.1.0",
+  "name": "psore-v4-1-2-referentiel-fixed",
+  "version": "4.1.2",
   "private": true,
   "scripts": {
     "dev": "next dev",
