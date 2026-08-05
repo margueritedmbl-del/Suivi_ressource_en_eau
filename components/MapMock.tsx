@@ -1,1 +1,0 @@
-export default function MapMock(){return <div className="map"><div className="pins"><span title="Pluviométrie">🌧️</span><span title="Piézométrie">💧</span><span title="Limnimétrie">🌊</span><span title="Points d'eau">🚰</span></div></div>}
