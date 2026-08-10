@@ -1,0 +1,5 @@
+﻿code,nom,commune,village,latitude,longitude,utm_x,utm_y,epsg,annee_construction,surface_bassin_versant_km2,surface_inondee_ha,surface_riziculture_ha,surface_maraichage_ha,nombre_exploitants,crue_projet_100ans_m3s,curage_surface_ha,curage_profondeur_m,curage_volume_estime_m3,lignes_cordons_pierreux,digue_filtrante_longueur_m,cout_rehabilitation_fcfa,statut_travaux
+MB-01,Bodo,Koula,Bodo,13.17818483,-7.72360704,638324.7,1457191.95,32629,2016,35,10,7,15,106,82.24,11,0.3,33000,2,100,51217500,Réalisés intégralement
+MB-02,Fani,Doumba,Fani,13.16793684,-7.54300885,657906.55,1456164.79,32629,2002,62,6.2,2,5,30,98.52,6,0.5,30000,2,50,50050580,Réalisés intégralement
+MB-03,Sirimansoni,Koula,Sirimansoni,13.07871309,-7.69773138,641186.13,1446203.46,32629,2016,91,10,6,22,110,132.52,9,0.3,27000,2,230,47682000,Réalisés intégralement
+MB-04,Wolokorodji,Koula,Wolokorodji,13.11156167,-7.46155055,666774.82,1449980.97,32629,2016,134,36,35,90,700,148,0,0,0,1,0,11614000,Réalisés intégralement
