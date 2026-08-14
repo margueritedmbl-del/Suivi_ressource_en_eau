@@ -1,3 +1,0 @@
-export const dynamic = "force-dynamic";
-import LoginForm from "@/components/auth/LoginForm";
-export default function Login(){return <div className="login-wrap"><section className="login-visual"><div><img src="/visuels/accueil-plateforme-eau.png" alt="Plateforme de suivi des ressources en eau"/><h1 style={{fontSize:42,marginBottom:8}}>Connexion sécurisée</h1><p style={{fontSize:18,opacity:.85}}>Accès réservé aux administrateurs PTCS, DNH/DRHK et utilisateurs autorisés.</p></div></section><section className="login-box"><div className="login-card"><img src="/logos/psore.png" alt="PSORE"/><h2>Se connecter</h2><LoginForm/><p style={{color:"#64748b",textAlign:"center",marginTop:18}}>Authentification Supabase Auth</p></div></section></div>}
