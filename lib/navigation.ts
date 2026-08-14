@@ -9,5 +9,5 @@ export const PUBLIC_MODULE_ITEMS = [
 export const INTERNAL_ANALYSIS_ITEMS = [
   ["/sig-decisionnel", "🧭 SIG décisionnel"],
 ] as const;
-export const BUILD_VERSION = "4.7.1";
+export const BUILD_VERSION = "4.8.1";
 export const BUILD_LABEL = `PSORE V${BUILD_VERSION}`;
