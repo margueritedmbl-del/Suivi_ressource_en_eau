@@ -1,0 +1,3 @@
+import Link from "next/link";
+import { PUBLIC_MODULE_ITEMS } from "@/lib/navigation";
+export default function Topbar(){return <><div className="top-ribbon"><div className="top-ribbon-inner"><span><strong>PTCS – Enabel – DNH/DRHK</strong></span><span>Plateforme de Suivi des Ressources en Eau • Koulikoro</span></div></div><header className="navbar"><div className="navbar-inner"><Link href="/" className="brand"><img src="/logos/psore.png" alt="PSORE"/></Link><nav className="nav-links">{PUBLIC_MODULE_ITEMS.map(([href,label])=><Link key={href} href={href}>{label.replace(/^[^ ]+ /,"")}</Link>)}</nav><Link className="btn btn-primary" href="/login">Connexion</Link></div></header></>}
