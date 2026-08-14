@@ -1,2 +1,0 @@
-export const dynamic="force-dynamic";import DashboardShell from "@/components/DashboardShell";import ReportsPanel from "@/components/reports/ReportsPanel";
-export default function Page(){return <DashboardShell title="Rapports et exports" subtitle="PDF, Word, Excel et CSV par module ou global"><ReportsPanel/><div className="panel" style={{marginTop:18}}><h2>Contenu des rapports</h2><p>Logos, résumé exécutif, KPI, tableaux, graphiques, carte et observations/commentaires.</p></div></DashboardShell>}
