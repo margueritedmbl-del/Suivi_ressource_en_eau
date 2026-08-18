@@ -1,1 +1,0 @@
-export const dynamic="force-dynamic";import DashboardShell from"@/components/DashboardShell";import PublicReportsPanel from"@/components/reports/PublicReportsPanel";export default function Page(){return <DashboardShell title="Rapports publics" subtitle="Synthèses non sensibles du suivi des ressources en eau"><PublicReportsPanel/></DashboardShell>}
