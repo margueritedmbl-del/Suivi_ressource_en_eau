@@ -1,0 +1,202 @@
+[
+  {
+    "code": "PZ-01",
+    "site": "Fani",
+    "certificat_disponible": true,
+    "statut_extraction": "Document disponible; paramètres à saisir et valider dans PSORE",
+    "source": "Archives analyses d’eau et essais de pompage des piézomètres",
+    "bucket": "psore-documents",
+    "storage_path_certificat": "piezometres/analyses-eau/PZ-01.pdf",
+    "storage_path_essai": "piezometres/essais-pompage/PZ-01.pdf"
+  },
+  {
+    "code": "PZ-02",
+    "site": "Dombana",
+    "certificat_disponible": true,
+    "statut_extraction": "Document disponible; paramètres à saisir et valider dans PSORE",
+    "source": "Archives analyses d’eau et essais de pompage des piézomètres",
+    "bucket": "psore-documents",
+    "storage_path_certificat": "piezometres/analyses-eau/PZ-02.pdf",
+    "storage_path_essai": "piezometres/essais-pompage/PZ-02.pdf"
+  },
+  {
+    "code": "PZ-03",
+    "site": "Doumba",
+    "certificat_disponible": true,
+    "statut_extraction": "Document disponible; paramètres à saisir et valider dans PSORE",
+    "source": "Archives analyses d’eau et essais de pompage des piézomètres",
+    "bucket": "psore-documents",
+    "storage_path_certificat": "piezometres/analyses-eau/PZ-03.pdf",
+    "storage_path_essai": "piezometres/essais-pompage/PZ-03.pdf"
+  },
+  {
+    "code": "PZ-04",
+    "site": "Dialakorobougou",
+    "certificat_disponible": true,
+    "statut_extraction": "Document disponible; paramètres à saisir et valider dans PSORE",
+    "source": "Archives analyses d’eau et essais de pompage des piézomètres",
+    "bucket": "psore-documents",
+    "storage_path_certificat": "piezometres/analyses-eau/PZ-04.pdf",
+    "storage_path_essai": "piezometres/essais-pompage/PZ-04.pdf"
+  },
+  {
+    "code": "PZ-05",
+    "site": "Wolokorodji",
+    "certificat_disponible": true,
+    "statut_extraction": "Document disponible; paramètres à saisir et valider dans PSORE",
+    "source": "Archives analyses d’eau et essais de pompage des piézomètres",
+    "bucket": "psore-documents",
+    "storage_path_certificat": "piezometres/analyses-eau/PZ-05.pdf",
+    "storage_path_essai": "piezometres/essais-pompage/PZ-05.pdf"
+  },
+  {
+    "code": "PZ-06",
+    "site": "Gnamakorobougou",
+    "certificat_disponible": true,
+    "statut_extraction": "Document disponible; paramètres à saisir et valider dans PSORE",
+    "source": "Archives analyses d’eau et essais de pompage des piézomètres",
+    "bucket": "psore-documents",
+    "storage_path_certificat": "piezometres/analyses-eau/PZ-06.pdf",
+    "storage_path_essai": "piezometres/essais-pompage/PZ-06.pdf"
+  },
+  {
+    "code": "PZ-07",
+    "site": "Félou",
+    "certificat_disponible": true,
+    "statut_extraction": "Document disponible; paramètres à saisir et valider dans PSORE",
+    "source": "Archives analyses d’eau et essais de pompage des piézomètres",
+    "bucket": "psore-documents",
+    "storage_path_certificat": "piezometres/analyses-eau/PZ-07.pdf",
+    "storage_path_essai": "piezometres/essais-pompage/PZ-07.pdf"
+  },
+  {
+    "code": "PZ-08",
+    "site": "Niobougou",
+    "certificat_disponible": true,
+    "statut_extraction": "Document disponible; paramètres à saisir et valider dans PSORE",
+    "source": "Archives analyses d’eau et essais de pompage des piézomètres",
+    "bucket": "psore-documents",
+    "storage_path_certificat": "piezometres/analyses-eau/PZ-08.pdf",
+    "storage_path_essai": "piezometres/essais-pompage/PZ-08.pdf"
+  },
+  {
+    "code": "PZ-09",
+    "site": "Sirakorola Ouest",
+    "certificat_disponible": true,
+    "statut_extraction": "Document disponible; paramètres à saisir et valider dans PSORE",
+    "source": "Archives analyses d’eau et essais de pompage des piézomètres",
+    "bucket": "psore-documents",
+    "storage_path_certificat": "piezometres/analyses-eau/PZ-09.pdf",
+    "storage_path_essai": "piezometres/essais-pompage/PZ-09.pdf"
+  },
+  {
+    "code": "PZ-10",
+    "site": "Monzombala",
+    "certificat_disponible": true,
+    "statut_extraction": "Document disponible; paramètres à saisir et valider dans PSORE",
+    "source": "Archives analyses d’eau et essais de pompage des piézomètres",
+    "bucket": "psore-documents",
+    "storage_path_certificat": "piezometres/analyses-eau/PZ-10.pdf",
+    "storage_path_essai": "piezometres/essais-pompage/PZ-10.pdf"
+  },
+  {
+    "code": "PZ-11",
+    "site": "Dlana",
+    "certificat_disponible": true,
+    "statut_extraction": "Document disponible; paramètres à saisir et valider dans PSORE",
+    "source": "Archives analyses d’eau et essais de pompage des piézomètres",
+    "bucket": "psore-documents",
+    "storage_path_certificat": "piezometres/analyses-eau/PZ-11.pdf",
+    "storage_path_essai": "piezometres/essais-pompage/PZ-11.pdf"
+  },
+  {
+    "code": "PZ-12",
+    "site": "Boron Cissé",
+    "certificat_disponible": true,
+    "statut_extraction": "Document disponible; paramètres à saisir et valider dans PSORE",
+    "source": "Archives analyses d’eau et essais de pompage des piézomètres",
+    "bucket": "psore-documents",
+    "storage_path_certificat": "piezometres/analyses-eau/PZ-12.pdf",
+    "storage_path_essai": "piezometres/essais-pompage/PZ-12.pdf"
+  },
+  {
+    "code": "PZ-13",
+    "site": "Dontérébougou",
+    "certificat_disponible": true,
+    "statut_extraction": "Document disponible; paramètres à saisir et valider dans PSORE",
+    "source": "Archives analyses d’eau et essais de pompage des piézomètres",
+    "bucket": "psore-documents",
+    "storage_path_certificat": "piezometres/analyses-eau/PZ-13.pdf",
+    "storage_path_essai": "piezometres/essais-pompage/PZ-13.pdf"
+  },
+  {
+    "code": "PZ-14",
+    "site": "Koroka",
+    "certificat_disponible": true,
+    "statut_extraction": "Document disponible; paramètres à saisir et valider dans PSORE",
+    "source": "Archives analyses d’eau et essais de pompage des piézomètres",
+    "bucket": "psore-documents",
+    "storage_path_certificat": "piezometres/analyses-eau/PZ-14.pdf",
+    "storage_path_essai": "piezometres/essais-pompage/PZ-14.pdf"
+  },
+  {
+    "code": "PZ-15",
+    "site": "Zana",
+    "certificat_disponible": true,
+    "statut_extraction": "Document disponible; paramètres à saisir et valider dans PSORE",
+    "source": "Archives analyses d’eau et essais de pompage des piézomètres",
+    "bucket": "psore-documents",
+    "storage_path_certificat": "piezometres/analyses-eau/PZ-15.pdf",
+    "storage_path_essai": "piezometres/essais-pompage/PZ-15.pdf"
+  },
+  {
+    "code": "PZ-16",
+    "site": "Gouni",
+    "certificat_disponible": true,
+    "statut_extraction": "Document disponible; paramètres à saisir et valider dans PSORE",
+    "source": "Archives analyses d’eau et essais de pompage des piézomètres",
+    "bucket": "psore-documents",
+    "storage_path_certificat": "piezometres/analyses-eau/PZ-16.pdf",
+    "storage_path_essai": "piezometres/essais-pompage/PZ-16.pdf"
+  },
+  {
+    "code": "PZ-17",
+    "site": "Fégoun",
+    "certificat_disponible": true,
+    "statut_extraction": "Document disponible; paramètres à saisir et valider dans PSORE",
+    "source": "Archives analyses d’eau et essais de pompage des piézomètres",
+    "bucket": "psore-documents",
+    "storage_path_certificat": "piezometres/analyses-eau/PZ-17.pdf",
+    "storage_path_essai": "piezometres/essais-pompage/PZ-17.pdf"
+  },
+  {
+    "code": "PZ-18",
+    "site": "Diaguinébougou",
+    "certificat_disponible": true,
+    "statut_extraction": "Document disponible; paramètres à saisir et valider dans PSORE",
+    "source": "Archives analyses d’eau et essais de pompage des piézomètres",
+    "bucket": "psore-documents",
+    "storage_path_certificat": "piezometres/analyses-eau/PZ-18.pdf",
+    "storage_path_essai": "piezometres/essais-pompage/PZ-18.pdf"
+  },
+  {
+    "code": "PZ-19",
+    "site": "Siratiguila",
+    "certificat_disponible": true,
+    "statut_extraction": "Document disponible; paramètres à saisir et valider dans PSORE",
+    "source": "Archives analyses d’eau et essais de pompage des piézomètres",
+    "bucket": "psore-documents",
+    "storage_path_certificat": "piezometres/analyses-eau/PZ-19.pdf",
+    "storage_path_essai": "piezometres/essais-pompage/PZ-19.pdf"
+  },
+  {
+    "code": "PZ-20",
+    "site": "Diladjè",
+    "certificat_disponible": true,
+    "statut_extraction": "Document disponible; paramètres à saisir et valider dans PSORE",
+    "source": "Archives analyses d’eau et essais de pompage des piézomètres",
+    "bucket": "psore-documents",
+    "storage_path_certificat": "piezometres/analyses-eau/PZ-20.pdf",
+    "storage_path_essai": "piezometres/essais-pompage/PZ-20.pdf"
+  }
+]
