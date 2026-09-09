@@ -1,7 +1,7 @@
 import { hasSupabaseAdminEnv, supabaseAdmin } from "@/lib/supabase-admin";
 import { buildPointEauDashboard, cleanRowsForPublic, counts as pointCounts, readPointEauRows } from "@/services/points-eau/analytics";
 import { loadHydroRows } from "@/lib/hydro-data";
-import { distinctOfficialSites, networkTotal, NETWORK_STATIONS, type HydroModule } from "@/lib/network-registry";
+import { distinctOfficialSites, networkTotal, NETWORK_STATIONS, normalizeName, type HydroModule } from "@/lib/network-registry";
 
 export type ChartItem = { label: string; value: number };
 export type InstitutionalDashboardData = {
@@ -171,7 +171,7 @@ export async function buildInstitutionalDashboard(): Promise<InstitutionalDashbo
     observations_limni: limniSummary.observations,
     observations_total: pluvioSummary.observations + piezoSummary.observations + limniSummary.observations,
     alertes_total: hydrologicalAlerts.length + Number(peDashboard.stats.alertes_qualite || 0),
-    communes_couvertes: new Set([...NETWORK_STATIONS.pluviometrie,...NETWORK_STATIONS.piezometrie,...NETWORK_STATIONS.limnimetrie].map(x=>x.commune).filter(Boolean)).size,
+    communes_couvertes: new Set([...NETWORK_STATIONS.pluviometrie,...NETWORK_STATIONS.piezometrie,...NETWORK_STATIONS.limnimetrie].map(x=>normalizeName(x.commune)).filter(Boolean)).size,
     derniere_observation: [pluvioSummary.derniere_observation, piezoSummary.derniere_observation, limniSummary.derniere_observation].filter(Boolean).sort().pop() || null,
     derniere_sync: syncLogs[0]?.date_sync || null,
   };
