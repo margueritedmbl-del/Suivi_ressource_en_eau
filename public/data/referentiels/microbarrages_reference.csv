@@ -1,0 +1,5 @@
+﻿code,nom,commune,village,latitude,longitude,annee_construction,surface_bassin_versant_km2,surface_inondee_ha,dragage_surface_ha,dragage_epaisseur_m,depots_evacues_m3,cordons_pierreux_ml,digue_filtrante_gabion_m3,euphorbia_ml,recalibrage_lit_mineur_ml,taux_execution_pct,date_reception_technique,date_reception_provisoire,statut_travaux
+MB-01,Bodo,Koula,Bodo,13.17818483,-7.72360704,2016,35,10,11,0.3,33000,4500,283,2000,0,100,2025-07-18,2025-08-12 au 2025-08-13,Réalisés et réceptionnés provisoirement
+MB-02,Fani,Doumba,Fani,13.16793684,-7.54300885,2002,62,6.2,6,0.5,30000,4600,157,2400,0,100,2025-07-18,2025-08-12 au 2025-08-13,Réalisés et réceptionnés provisoirement
+MB-03,Sirimansoni,Koula,Sirimansoni,13.07871309,-7.69773138,2016,91,10,9,0.3,27000,4800,550,2100,100,100,2025-07-18,2025-08-12 au 2025-08-13,Réalisés et réceptionnés provisoirement
+MB-04,Wolokorodji,Koula,Wolokorodji,13.11156167,-7.46155055,2016,134,36,0,0,175,5800,0,0,0,100,2025-07-18,2025-08-12 au 2025-08-13,Réalisés et réceptionnés provisoirement
