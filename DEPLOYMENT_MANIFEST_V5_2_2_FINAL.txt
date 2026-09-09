@@ -1,0 +1,10 @@
+PSORE V5.2.2 FINAL DEPLOYMENT PACKAGE
+Generated: 2026-09-09
+Purpose: GitHub -> Render deployment
+Database final patch: database/38_PATCH_POINTS_EAU_DASHBOARD_V5_2_2.sql
+Validated Points d'eau: 540
+Quality alerts: 101
+pH alerts: 98
+Temperature alerts: 0
+GPS alerts: 56
+Priority high/medium/low: 220/192/128
