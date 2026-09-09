@@ -1,0 +1,120 @@
+export type HydroModule = "pluviometrie" | "piezometrie" | "limnimetrie";
+
+export type StationMeta = {
+  code: string;
+  shortCode?: string;
+  locality?: string;
+  commune?: string;
+  aliases?: string[];
+  codeAliases?: string[];
+};
+
+export const NETWORK_STATIONS: Record<HydroModule, StationMeta[]> = {
+  pluviometrie: [
+    {code:"PL-MGT-GOU-001",locality:"Gouni",commune:"Meguetan",aliases:["GOUNI"]},
+    {code:"PL-DMB-DOM-001",locality:"Dombana",commune:"Doumba",aliases:["DOMBANA"]},
+    {code:"PL-DMB-DIB-001",locality:"Dibaro",commune:"Doumba",aliases:["DIBARO"]},
+    {code:"PL-DMB-FAN-001",locality:"Fani",commune:"Doumba",aliases:["FANI"]},
+    {code:"PL-KLA-DKB-001",locality:"Dialakorobougou",commune:"Koula",aliases:["DIALAKOROBOUGOU"]},
+    {code:"PL-KLA-GKB-001",locality:"Gnamakorobougou",commune:"Koula",aliases:["Niamakorobougou","GNAMAKOROBOUGOU"]},
+    {code:"PL-KLA-FEL-001",locality:"Félou",commune:"Koula",aliases:["Felou","FELOU"]},
+    {code:"PL-SRK-DLN-001",locality:"Dlana",commune:"Sirakorola",aliases:["DLANA"]},
+    {code:"PL-SRK-BRC-001",locality:"Boron Cissé",commune:"Sirakorola",aliases:["Boron Cisse","BORON CISSE"]},
+    {code:"PL-SRK-DTB-001",locality:"Dontiérébougou",commune:"Sirakorola",aliases:["Dontierebougou","Dontérébougou","DONTIERIBOUGOU"]},
+  ],
+  piezometrie: [
+    {code:"PZ-DMB-FAN-001",shortCode:"PZ-01",locality:"Fani",commune:"Doumba"},
+    // PZ-02 = Dombana. Le code SIN est conservé comme alias historique pour ne pas perdre les données de test déjà saisies.
+    {code:"PZ-DMB-DBN-001",shortCode:"PZ-02",locality:"Dombana",commune:"Doumba",codeAliases:["PZ-DMB-SIN-001"],aliases:["Dombana"]},
+    {code:"PZ-DMB-DOM-001",shortCode:"PZ-03",locality:"Doumba",commune:"Doumba"},
+    {code:"PZ-KLA-DKB-001",shortCode:"PZ-04",locality:"Dialakorobougou",commune:"Koula"},
+    {code:"PZ-KLA-WLK-001",shortCode:"PZ-05",locality:"Wolokorodji",commune:"Koula",aliases:["Wolokorodjie"]},
+    {code:"PZ-KLA-NMCBG-001",shortCode:"PZ-06",locality:"Gnamakorobougou",commune:"Koula",aliases:["Niamakorobougou"]},
+    {code:"PZ-KLA-FEL-001",shortCode:"PZ-07",locality:"Félou",commune:"Koula",aliases:["Felou"]},
+    {code:"PZ-KLA-NIO-001",shortCode:"PZ-08",locality:"Niobougou",commune:"Koula",aliases:["Nioboubou","KOULA BAMBARA"]},
+    {code:"PZ-SRK-O-001",shortCode:"PZ-09",locality:"Sirakorola Ouest",commune:"Sirakorola",aliases:["Sirakorola"]},
+    {code:"PZ-SRK-MON-001",shortCode:"PZ-10",locality:"Monzombala",commune:"Sirakorola",aliases:["Monzobala","Monzonbala"]},
+    {code:"PZ-SRK-DLN-001",shortCode:"PZ-11",locality:"Dlana",commune:"Sirakorola"},
+    {code:"PZ-SRK-BRC-001",shortCode:"PZ-12",locality:"Boron Cissé",commune:"Sirakorola",aliases:["Boron Cisse"]},
+    {code:"PZ-SRK-DTB-001",shortCode:"PZ-13",locality:"Dontérébougou",commune:"Sirakorola",aliases:["Dontierebougou","Dontiérébougou"]},
+    {code:"PZ-SRK-KOR-001",shortCode:"PZ-14",locality:"Koroka",commune:"Sirakorola"},
+    {code:"PZ-SRK-ZAN-001",shortCode:"PZ-15",locality:"Zana",commune:"Sirakorola"},
+    {code:"PZ-MGT-GOU-001",shortCode:"PZ-16",locality:"Gouni",commune:"Méguétan",aliases:["Meguetan"]},
+    {code:"PZ-MGT-FEG-001",shortCode:"PZ-17",locality:"Fégoun",commune:"Méguétan",aliases:["Fegoun"]},
+    {code:"PZ-MGT-DGB-001",shortCode:"PZ-18",locality:"Diaguinébougou",commune:"Méguétan",aliases:["Dianguinebougou"]},
+    {code:"PZ-MGT-STG-001",shortCode:"PZ-19",locality:"Siratiguila",commune:"Méguétan"},
+    {code:"PZ-MGT-DLDJ-001",shortCode:"PZ-20",locality:"Diladjè",commune:"Méguétan",aliases:["Diladié","Dladie"]},
+  ],
+  limnimetrie: [
+    {code:"CE-KLK-001_B-FANI",locality:"Fani",commune:"Doumba"},
+    {code:"CE-KLK-002_B-WLKRDJI",locality:"Wolokorodji",commune:"Koula"},
+    {code:"CE-KLK-003_B-BDO",locality:"Bodo",commune:"Koula"},
+    {code:"CE-KLK-004_B-SRMSNI",locality:"Sirimansoni",commune:"Koula"},
+    {code:"CE-KLK-005_R-BBGOU-PNT",locality:"Babougou",commune:"Doumba"},
+    // Données Epicollect 18/08/2026 : CE-KLK-006_R-TNKA-PNT = Tonga, commune Méguétan, cours d'eau Faya.
+    {code:"CE-KLK-006_R-TNKA-PNT",locality:"Tonga",commune:"Méguétan",aliases:["TONGA","Tanaka"]},
+    {code:"CE-KLK-007_R-DBNA",locality:"Dombana",commune:"Doumba"},
+    {code:"CE-KLK-008_R-DLNA",locality:"Dlana",commune:"Sirakorola"},
+    {code:"CE-KLK-009_R-DNTRBGOU",locality:"Dontiérébougou",commune:"Sirakorola"},
+    {code:"CE-KLK-008_R-BRN-CSSE",locality:"Boron Cissé",commune:"Sirakorola"},
+  ],
+};
+
+export const OFFICIAL_NETWORK: Record<HydroModule, { label: string; codes: string[] }> = {
+  pluviometrie:{label:"Stations pluviométriques",codes:NETWORK_STATIONS.pluviometrie.map(x=>x.code)},
+  piezometrie:{label:"Piézomètres",codes:NETWORK_STATIONS.piezometrie.map(x=>x.code)},
+  limnimetrie:{label:"Stations limnimétriques",codes:NETWORK_STATIONS.limnimetrie.map(x=>x.code)},
+};
+
+export function normalizeCode(v:any){return String(v??"").trim().toUpperCase();}
+export function normalizeName(v:any){return String(v??"").trim().toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Z0-9]/g,"");}
+function stationCodeMatches(s:StationMeta, value:any){
+  const code=normalizeCode(value); if(!code)return false;
+  return [s.code,s.shortCode,...(s.codeAliases||[])].filter(Boolean).some(x=>normalizeCode(x)===code);
+}
+function stationLocalityMatches(s:StationMeta, locality:any){
+  const loc=normalizeName(locality); if(!loc)return false;
+  return [s.locality,...(s.aliases||[])].filter(Boolean).some(x=>normalizeName(x)===loc);
+}
+
+export function stationMeta(module:HydroModule,value:any,locality?:any){
+  const byCode=NETWORK_STATIONS[module].find(s=>stationCodeMatches(s,value));
+  if(byCode)return byCode;
+  return locality?NETWORK_STATIONS[module].find(s=>stationLocalityMatches(s,locality))||null:null;
+}
+export function stationMetaByCode(module:HydroModule,value:any){
+  return NETWORK_STATIONS[module].find(s=>stationCodeMatches(s,value))||null;
+}
+export function officialCodeStrict(module:HydroModule,value:any){return stationMetaByCode(module,value)?.code||null;}
+export function officialCode(module:HydroModule,value:any,locality?:any){return stationMeta(module,value,locality)?.code||null;}
+export function shortCodeForPiezo(value:any,locality?:any){return stationMeta("piezometrie",value,locality)?.shortCode||null;}
+export function networkTotal(module:HydroModule){return NETWORK_STATIONS[module].length;}
+export function distinctOfficialSites(module:HydroModule,rows:any[]){
+  const vals=rows.map(r=>officialCode(module,r?.code_site||r?.code_station||r?.code_piezo,r?.nom_site||r?.village||r?.localite)).filter(Boolean) as string[];
+  return new Set(vals);
+}
+export function displayStationCode(module:HydroModule,value:any,locality?:any){
+  const s=stationMeta(module,value,locality); if(!s)return normalizeCode(value)||"Non renseigné";
+  return module==="piezometrie"&&s.shortCode?`${s.shortCode} · ${s.code}`:s.code;
+}
+
+export type StationResolution = {
+  meta: StationMeta | null;
+  code: string | null;
+  confidence: "code" | "code_alias" | "short_code" | "locality" | "unresolved";
+};
+
+export function resolveStation(module:HydroModule,input:{code?:any;locality?:any}):StationResolution{
+  const raw=normalizeCode(input.code);
+  if(raw){
+    const direct=NETWORK_STATIONS[module].find(s=>normalizeCode(s.code)===raw);
+    if(direct)return{meta:direct,code:direct.code,confidence:"code"};
+    const short=NETWORK_STATIONS[module].find(s=>normalizeCode(s.shortCode)===raw);
+    if(short)return{meta:short,code:short.code,confidence:"short_code"};
+    const alias=NETWORK_STATIONS[module].find(s=>(s.codeAliases||[]).some(a=>normalizeCode(a)===raw));
+    if(alias)return{meta:alias,code:alias.code,confidence:"code_alias"};
+  }
+  const loc=NETWORK_STATIONS[module].find(s=>stationLocalityMatches(s,input.locality));
+  if(loc)return{meta:loc,code:loc.code,confidence:"locality"};
+  return{meta:null,code:null,confidence:"unresolved"};
+}
