@@ -1,1 +1,0 @@
-export default function ChartMock(){const h=[42,76,51,92,65,84,56,74,44,88,61,70];return <div className="chart">{h.map((v,i)=><div key={i} className="bar" style={{height:`${v}%`}} />)}</div>}
