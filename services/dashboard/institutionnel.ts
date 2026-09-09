@@ -1,7 +1,15 @@
 import { hasSupabaseAdminEnv, supabaseAdmin } from "@/lib/supabase-admin";
 import { buildPointEauDashboard, cleanRowsForPublic, counts as pointCounts, readPointEauRows } from "@/services/points-eau/analytics";
 import { loadHydroRows } from "@/lib/hydro-data";
-import { distinctOfficialSites, networkTotal, NETWORK_STATIONS, normalizeName, type HydroModule } from "@/lib/network-registry";
+import { distinctOfficialSites, networkTotal, NETWORK_STATIONS, type HydroModule } from "@/lib/network-registry";
+
+const OPERATIONAL_START_DATE = "2026-08-16";
+function isCurrentOperationalDate(v: any) {
+  const d = dateText(v);
+  if (!d) return false;
+  const today = new Date().toISOString().slice(0, 10);
+  return d >= OPERATIONAL_START_DATE && d <= today;
+}
 
 export type ChartItem = { label: string; value: number };
 export type InstitutionalDashboardData = {
@@ -74,24 +82,26 @@ async function readAlerts() {
 }
 
 function moduleSummary(module: HydroModule, label: string, rows: any[]) {
-  const stationsWithData = distinctOfficialSites(module, rows);
-  const alerts = rows.filter(isHydroAlert);
-  const gpsMissing = new Set(rows.filter((r) => r.alerte_gps || r.latitude === null || r.longitude === null).map((r)=>text(r.code_site)).filter(Boolean));
+  const operationalRows = rows.filter((r) => isCurrentOperationalDate(r.date_observation));
+  const stationsWithData = distinctOfficialSites(module, operationalRows);
+  const alerts = operationalRows.filter(isHydroAlert);
+  const gpsMissing = new Set(operationalRows.filter((r) => r.alerte_gps || r.latitude === null || r.longitude === null).map((r)=>text(r.code_site)).filter(Boolean));
   return {
     module,
     label,
-    observations: rows.length,
+    observations: operationalRows.length,
+    observations_historique: rows.length,
     sites: networkTotal(module),
     sites_avec_donnees: stationsWithData.size,
     couverture_pct: pct(stationsWithData.size, networkTotal(module)),
-    moyenne: avg(rows, module === "pluviometrie" ? "pluie_24h_mm" : module === "piezometrie" ? "niveau_statique" : "hauteur_eau"),
+    moyenne: avg(operationalRows, module === "pluviometrie" ? "pluie_24h_mm" : module === "piezometrie" ? "niveau_statique" : "hauteur_eau"),
     alertes: alerts.length,
-    taux_alerte: pct(alerts.length, rows.length),
+    taux_alerte: pct(alerts.length, operationalRows.length),
     sans_gps: gpsMissing.size,
-    derniere_observation: latestDate(rows),
-    communes: countBy(rows, "commune"),
-    alertes_par_niveau: countBy(rows.filter(isHydroAlert), (r) => text(r.niveau_alerte) || "Alerte"),
-    evolution: countBy(rows, (r) => dateText(r.date_observation) || "Non daté").sort((a, b) => a.label.localeCompare(b.label)).slice(-24),
+    derniere_observation: latestDate(operationalRows),
+    communes: countBy(operationalRows, "commune"),
+    alertes_par_niveau: countBy(alerts, (r) => text(r.niveau_alerte) || "Alerte"),
+    evolution: countBy(operationalRows, (r) => dateText(r.date_observation) || "Non daté").sort((a, b) => a.label.localeCompare(b.label)).slice(-24),
   };
 }
 
@@ -112,7 +122,7 @@ export async function buildInstitutionalDashboard(): Promise<InstitutionalDashbo
   const cleanPointRows = cleanRowsForPublic(pointRows);
   const peDashboard = buildPointEauDashboard(cleanPointRows);
 
-  const [pluvio, piezo, limni, syncLogs, dbAlerts] = await Promise.all([
+  const [pluvioRaw, piezoRaw, limniRaw, syncLogs, dbAlerts] = await Promise.all([
     loadHydroRows("pluviometrie"),
     loadHydroRows("piezometrie"),
     loadHydroRows("limnimetrie"),
@@ -120,11 +130,14 @@ export async function buildInstitutionalDashboard(): Promise<InstitutionalDashbo
     readAlerts(),
   ]);
 
-  const pluvioSummary = moduleSummary("pluviometrie", "Pluviométrie", pluvio.rows);
-  const piezoSummary = moduleSummary("piezometrie", "Piézométrie", piezo.rows);
-  const limniSummary = moduleSummary("limnimetrie", "Limnimétrie", limni.rows);
+  const pluvioSummary = moduleSummary("pluviometrie", "Pluviométrie", pluvioRaw.rows);
+  const piezoSummary = moduleSummary("piezometrie", "Piézométrie", piezoRaw.rows);
+  const limniSummary = moduleSummary("limnimetrie", "Limnimétrie", limniRaw.rows);
+  const pluvio = pluvioRaw.rows.filter((r) => isCurrentOperationalDate(r.date_observation));
+  const piezo = piezoRaw.rows.filter((r) => isCurrentOperationalDate(r.date_observation));
+  const limni = limniRaw.rows.filter((r) => isCurrentOperationalDate(r.date_observation));
 
-  const hydrologicalAlerts = [...pluvio.rows, ...piezo.rows, ...limni.rows]
+  const hydrologicalAlerts = [...pluvio, ...piezo, ...limni]
     .filter(isHydroAlert)
     .map((r) => ({
       module: r.module || (r.pluie_24h_mm !== undefined ? "pluviometrie" : r.niveau_statique !== undefined ? "piezometrie" : "limnimetrie"),
@@ -135,17 +148,18 @@ export async function buildInstitutionalDashboard(): Promise<InstitutionalDashbo
       message: text(r.statut_qualite || r.commentaire || "Alerte à vérifier"),
     }));
   const pointAlerts = cleanPointRows
-    .filter((r: any) => r.priorite_rehabilitation === "Élevée" || r.alerte_qualite_eau || r.alerte_gps)
+    .filter((r: any) => isCurrentOperationalDate(r.date_collecte) && (r.priorite_rehabilitation === "Élevée" || r.alerte_qualite_eau || r.alerte_gps))
     .slice(0, 80)
     .map((r: any) => ({ module: "points_eau", niveau: r.priorite_rehabilitation || "Alerte", commune: r.commune, site: r.code_pe || r.village, date: r.date_collecte, message: r.besoin_rehabilitation || r.problemes || "Contrôle qualité / réhabilitation" }));
 
   const dernieres = [
-    ...pluvio.rows.map((r) => ({ module: "Pluviométrie", date: dateText(r.date_observation), site: text(r.code_site || r.nom_site), commune: text(r.commune), valeur: r.pluie_24h_mm ?? r.valeur_observee, unite: "mm" })),
-    ...piezo.rows.map((r) => ({ module: "Piézométrie", date: dateText(r.date_observation), site: text(r.code_site || r.nom_site), commune: text(r.commune), valeur: r.niveau_statique ?? r.valeur_observee, unite: "m" })),
-    ...limni.rows.map((r) => ({ module: "Limnimétrie", date: dateText(r.date_observation), site: text(r.code_site || r.nom_site), commune: text(r.commune), valeur: r.hauteur_eau ?? r.valeur_observee, unite: "cm" })),
+    ...pluvio.map((r) => ({ module: "Pluviométrie", date: dateText(r.date_observation), site: text(r.code_site || r.nom_site), commune: text(r.commune), valeur: r.pluie_24h_mm ?? r.valeur_observee, unite: "mm" })),
+    ...piezo.map((r) => ({ module: "Piézométrie", date: dateText(r.date_observation), site: text(r.code_site || r.nom_site), commune: text(r.commune), valeur: r.niveau_statique ?? r.valeur_observee, unite: "m" })),
+    ...limni.map((r) => ({ module: "Limnimétrie", date: dateText(r.date_observation), site: text(r.code_site || r.nom_site), commune: text(r.commune), valeur: r.hauteur_eau ?? r.valeur_observee, unite: "cm" })),
   ].filter((r) => r.date).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 20);
 
   const alertes = [...pointAlerts, ...hydrologicalAlerts, ...dbAlerts.map((a) => ({ module: a.module, niveau: a.niveau, date: dateText(a.created_at), message: a.message, statut: a.statut }))]
+    .filter((a) => !a.date || isCurrentOperationalDate(a.date))
     .slice(0, 120);
 
   const modules = {
@@ -171,7 +185,7 @@ export async function buildInstitutionalDashboard(): Promise<InstitutionalDashbo
     observations_limni: limniSummary.observations,
     observations_total: pluvioSummary.observations + piezoSummary.observations + limniSummary.observations,
     alertes_total: hydrologicalAlerts.length + Number(peDashboard.stats.alertes_qualite || 0),
-    communes_couvertes: new Set([...NETWORK_STATIONS.pluviometrie,...NETWORK_STATIONS.piezometrie,...NETWORK_STATIONS.limnimetrie].map(x=>normalizeName(x.commune)).filter(Boolean)).size,
+    communes_couvertes: new Set([...NETWORK_STATIONS.pluviometrie,...NETWORK_STATIONS.piezometrie,...NETWORK_STATIONS.limnimetrie].map(x=>x.commune).filter(Boolean).map(x=>text(x).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase())).size,
     derniere_observation: [pluvioSummary.derniere_observation, piezoSummary.derniere_observation, limniSummary.derniere_observation].filter(Boolean).sort().pop() || null,
     derniere_sync: syncLogs[0]?.date_sync || null,
   };
@@ -182,7 +196,12 @@ export async function buildInstitutionalDashboard(): Promise<InstitutionalDashbo
       { label: "Piézo", value: piezoSummary.couverture_pct },
       { label: "Limni", value: limniSummary.couverture_pct },
     ],
-    alertes_par_module: countBy(alertes, "module"),
+    alertes_par_module: [
+      { label: "points_eau", value: Number(peDashboard.stats.alertes_qualite || 0) },
+      { label: "pluviometrie", value: pluvioSummary.alertes },
+      { label: "piezometrie", value: piezoSummary.alertes },
+      { label: "limnimetrie", value: limniSummary.alertes },
+    ].filter((x) => x.value > 0),
     communes_points_eau: pointCounts(cleanPointRows, "commune").slice(0, 12),
     fonctionnalite_points_eau: peDashboard.charts.fonctionnalite,
     synchronisations: countBy(syncLogs, "module"),
@@ -196,7 +215,7 @@ export async function buildInstitutionalDashboard(): Promise<InstitutionalDashbo
   };
 
   const data: InstitutionalDashboardData = {
-    source: [peSource, pluvio.source, piezo.source, limni.source].filter(Boolean).join(" | "),
+    source: [peSource, pluvioRaw.source, piezoRaw.source, limniRaw.source].filter(Boolean).join(" | "),
     generated_at: new Date().toISOString(),
     stats,
     modules,
