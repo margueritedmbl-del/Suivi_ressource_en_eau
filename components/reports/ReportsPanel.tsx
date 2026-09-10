@@ -1,4 +1,49 @@
 "use client";
-import{useEffect,useMemo,useState}from"react";import{useRole}from"@/components/auth/useRole";import{authFetch}from"@/lib/auth-client";
-export default function ReportsPanel(){const{role,canAccessReports}=useRole();const[module,setModule]=useState("pluviometrie"),[periode,setPeriode]=useState("mensuel"),[start,setStart]=useState(""),[end,setEnd]=useState(""),[sb,setSb]=useState("98"),[commune,setCommune]=useState("all"),[communes,setCommunes]=useState<string[]>([]),[busy,setBusy]=useState(""),[msg,setMsg]=useState("");useEffect(()=>{if(module!=="points_eau"){setCommune("all");return;}setCommune("all");setPeriode("personnalisee");fetch("/api/dashboard/points-eau").then(r=>r.json()).then(j=>setCommunes(j?.filters?.communes||[])).catch(()=>setCommunes([]));},[module]);const query=useMemo(()=>{const p=new URLSearchParams({module,periode});if(periode==="personnalisee"){if(start)p.set("start",start);if(end)p.set("end",end)}if(module==="sous_bassin"&&sb)p.set("sb",sb);if(module==="points_eau"&&commune&&commune!=="all")p.set("commune",commune);return p.toString()},[module,periode,start,end,sb,commune]);async function download(f:string,brief=false){if(!canAccessReports)return;const busyKey=brief?`${f}-brief`:f;setBusy(busyKey);setMsg("");try{const endpoint=module==="sous_bassin"?"/api/reports/export":"/api/reports/export-v2";const r=await authFetch(`${endpoint}?${query}&format=${f}${brief?"&brief=1":""}`);if(!r.ok){const j=await r.json().catch(()=>({}));throw new Error(j.error||`HTTP ${r.status}`)}const b=await r.blob(),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;const cd=r.headers.get("content-disposition")||"";const m=cd.match(/filename="?([^";]+)"?/i);a.download=m?.[1]||`psore_rapport.${f}`;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}catch(e:any){setMsg(`Erreur : ${e?.message||"export impossible"}`)}finally{setBusy("")}}
- return <div className="panel"><h2>Rapports techniques prêts pour présentation</h2><p><span className="role-badge">Rôle : {role}</span></p><p>Charte PSORE V5.2.2 : brief collectivités d’une page ou rapport technique en 3 pages, graphiques lisibles et cartes OSM centrées. Pour les points d’eau, le filtre « Commune » applique la même logique que le Dashboard. Les points d’eau sont des fiches d’inventaire d’ouvrages, non des stations ou des observations quotidiennes ; le rapport utilise par défaut l’inventaire consolidé complet. Une période éventuelle filtre la date de collecte/mise à jour. Les données détaillées restent dans XLSX/CSV.</p>{!canAccessReports&&<div className="notice-empty">Rapports techniques réservés aux rôles DNH/DRHK, Administrateur PTCS et Super administrateur.</div>}<div className="grid-2"><select className="input" value={module} onChange={e=>setModule(e.target.value)}><option value="pluviometrie">Pluviométrie</option><option value="piezometrie">Piézométrie</option><option value="limnimetrie">Limnimétrie</option><option value="points_eau">Points d'eau</option><option value="sous_bassin">Rapport intégré de sous-bassin</option></select>{module==="points_eau"&&<select className="input" value={commune} onChange={e=>setCommune(e.target.value)}><option value="all">Toutes les communes</option>{communes.map(c=><option key={c} value={c}>{c}</option>)}</select>}<select className="input" value={periode} onChange={e=>setPeriode(e.target.value)} disabled={module==="sous_bassin"||module==="points_eau"}>{module!=="points_eau"&&<><option value="mensuel">Mois en cours</option><option value="trimestriel">Trimestre en cours</option><option value="annuel">Année en cours</option></>}<option value="personnalisee">{module==="points_eau"?"Inventaire complet / période de collecte":"Période personnalisée / toutes les données"}</option></select></div>{module==="sous_bassin"&&<label style={{display:"block",marginTop:12}}><span>Identifiant du sous-bassin (ex. 98 pour SB-98)</span><input className="input" value={sb} onChange={e=>setSb(e.target.value.replace(/[^0-9]/g,""))}/></label>}{periode==="personnalisee"&&module!=="sous_bassin"&&<div className="grid-2" style={{marginTop:12}}><label><span>Début</span><input className="input" type="date" value={start} onChange={e=>setStart(e.target.value)}/></label><label><span>Fin</span><input className="input" type="date" value={end} onChange={e=>setEnd(e.target.value)}/></label></div>}<div className="report-grid" style={{marginTop:16}}>{module!=="sous_bassin"&&<button className="btn btn-primary" disabled={!canAccessReports||!!busy} onClick={()=>download("pdf",true)}>{busy==="pdf-brief"?"Génération...":"Brief collectivités PDF (1 page)"}</button>}{["pdf","docx","xlsx","csv"].map(f=><button key={f} className="btn btn-primary" disabled={!canAccessReports||!!busy} onClick={()=>download(f)}>{busy===f?"Génération...":`Exporter ${f.toUpperCase()}`}</button>)}</div>{msg&&<div className="notice-empty">{msg}</div>}</div>}
+import { useEffect, useMemo, useState } from "react";
+import { useRole } from "@/components/auth/useRole";
+import { authFetch } from "@/lib/auth-client";
+
+export default function ReportsPanel() {
+  const { role, canAccessReports } = useRole();
+  const [module, setModule] = useState("pluviometrie");
+  const [start, setStart] = useState("");
+  const [end, setEnd] = useState("");
+  const [sb, setSb] = useState("98");
+  const [busy, setBusy] = useState("");
+  const [msg, setMsg] = useState("");
+  const query = useMemo(() => {
+    const p = new URLSearchParams({ module });
+    if (module === "sous_bassin") p.set("sb", sb);
+    if (start) p.set("start", start);
+    if (end) p.set("end", end);
+    return p.toString();
+  }, [module, start, end, sb]);
+  async function download(format: string) {
+    if (!canAccessReports) return;
+    setBusy(format); setMsg("");
+    try {
+      const r = await authFetch(`/api/reports/export-v3?${query}&format=${format}`);
+      if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.error || `HTTP ${r.status}`); }
+      const blob = await r.blob(); const u = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = u;
+      const cd = r.headers.get("content-disposition") || ""; const m = cd.match(/filename="?([^";]+)"?/i); a.download = m?.[1] || `psore_rapport.${format}`; a.click();
+      setTimeout(() => URL.revokeObjectURL(u), 1000);
+    } catch (e: any) { setMsg(`Erreur : ${e?.message || "export impossible"}`); } finally { setBusy(""); }
+  }
+  return <div className="panel">
+    <h2>Rapports techniques — PSORE</h2>
+    <p><span className="role-badge">Rôle : {role}</span></p>
+    <p className="muted">Les rapports utilisent la même couche d'analyse que les exports : contrôle qualité, exclusion des doublons et données à vérifier, calculs piézométriques par commune, pluviométrie et niveau des cours d'eau. Les points d'eau restent un inventaire d'ouvrages et non une série d'observations quotidiennes.</p>
+    {!canAccessReports && <div className="notice-empty">Rapports techniques réservés aux rôles DNH/DRHK, Administrateur PTCS et Super administrateur.</div>}
+    <div className="grid-2">
+      <select className="input" value={module} onChange={e => setModule(e.target.value)}>
+        <option value="pluviometrie">Pluviométrie</option><option value="piezometrie">Piézométrie</option><option value="limnimetrie">Limnimétrie</option><option value="points_eau">Points d'eau</option><option value="sous_bassin">Rapport intégré de sous-bassin</option>
+      </select>
+      {module === "sous_bassin" && <label><span>Identifiant du sous-bassin</span><input className="input" value={sb} onChange={e => setSb(e.target.value.replace(/[^0-9]/g, ""))} placeholder="Ex. 102" /></label>}
+      {module !== "sous_bassin" && <><label><span>Début</span><input className="input" type="date" value={start} onChange={e => setStart(e.target.value)} /></label><label><span>Fin</span><input className="input" type="date" value={end} onChange={e => setEnd(e.target.value)} /></label></>}
+    </div>
+    <div className="report-grid" style={{ marginTop: 16 }}>
+      {["pdf", "docx", "xlsx", "csv"].map(f => <button key={f} className="btn btn-primary" disabled={!canAccessReports || !!busy} onClick={() => download(f)}>{busy === f ? "Génération..." : `Exporter ${f.toUpperCase()}`}</button>)}
+    </div>
+    {msg && <div className="notice-empty">{msg}</div>}
+  </div>;
+}
