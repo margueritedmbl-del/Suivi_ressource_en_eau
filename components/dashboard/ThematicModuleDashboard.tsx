@@ -98,7 +98,7 @@ export default function ThematicModuleDashboard({ module }: { module: ModuleName
   const exportQuery = params.toString();
   async function exportData(format: "csv" | "xlsx") {
     setExporting(format); setExportError("");
-    try { await downloadAuthenticated(`/api/export/${format}?${exportQuery}`, `PSORE_${module}.${format}`); }
+    try { await downloadAuthenticated(`/api/reports/export-v2?module=${module}&periode=personnalisee&format=${format}${exportQuery ? `&${exportQuery}` : ""}`, `PSORE_${module}.${format}`); }
     catch (e:any) { setExportError(e?.message || "Export impossible"); }
     finally { setExporting(""); }
   }
@@ -114,36 +114,11 @@ export default function ThematicModuleDashboard({ module }: { module: ModuleName
         </div>
 
         <div className="filters-grid compact filters-grid-wide">
-          <label>
-            <span>Commune</span>
-            <select className="input" value={commune} onChange={(e) => { setCommune(e.target.value); setSite("all"); }}>
-              <option value="all">Toutes</option>
-              {(filters.communes || []).map((c: string) => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </label>
-          <label>
-            <span>Site / station</span>
-            <select className="input" value={site} onChange={(e) => setSite(e.target.value)}>
-              <option value="all">Tous</option>
-              {(filters.sites || []).map((s: string) => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </label>
-          <label>
-            <span>Alerte</span>
-            <select className="input" value={alerte} onChange={(e) => setAlerte(e.target.value)}>
-              <option value="all">Toutes les données</option>
-              <option value="yes">Alertes seulement</option>
-              <option value="no">Sans alerte</option>
-            </select>
-          </label>
-          <label>
-            <span>Début</span>
-            <input className="input" type="date" value={start} onChange={(e) => setStart(e.target.value)} />
-          </label>
-          <label>
-            <span>Fin</span>
-            <input className="input" type="date" value={end} onChange={(e) => setEnd(e.target.value)} />
-          </label>
+          <label><span>Commune</span><select className="input" value={commune} onChange={(e) => { setCommune(e.target.value); setSite("all"); }}><option value="all">Toutes</option>{(filters.communes || []).map((c: string) => <option key={c} value={c}>{c}</option>)}</select></label>
+          <label><span>Site / station</span><select className="input" value={site} onChange={(e) => setSite(e.target.value)}><option value="all">Tous</option>{(filters.sites || []).map((s: string) => <option key={s} value={s}>{s}</option>)}</select></label>
+          <label><span>Alerte</span><select className="input" value={alerte} onChange={(e) => setAlerte(e.target.value)}><option value="all">Toutes les données</option><option value="yes">Alertes seulement</option><option value="no">Sans alerte</option></select></label>
+          <label><span>Début</span><input className="input" type="date" value={start} onChange={(e) => setStart(e.target.value)} /></label>
+          <label><span>Fin</span><input className="input" type="date" value={end} onChange={(e) => setEnd(e.target.value)} /></label>
         </div>
 
         <div className="quick-actions">
@@ -154,76 +129,14 @@ export default function ThematicModuleDashboard({ module }: { module: ModuleName
         {exportError && <div className="alert warn" style={{marginTop:10}}>{exportError}</div>}
       </div>
 
-      <div className="grid-4" style={{ marginTop: 18 }}>
-        <Kpi label="Observations opérationnelles" value={v(stats.observations)} hint={stats.seuil_operationnel ? `Depuis le ${stats.seuil_operationnel}` : "Toutes données exploitables"} />
-        <Kpi label="Sites du réseau" value={v(stats.sites)} hint={`${v(stats.sites_avec_donnees)} avec données · couverture ${v(stats.couverture_pct)}%`} />
-        <Kpi label={`Moyenne ${unitLabels[module]}`} value={fmtNumber(stats.moyenne)} hint={valueLabels[module]} />
-        <Kpi label="Alertes" value={v(stats.alertes)} hint="Contrôle qualité" />
-      </div>
-
-      <div className="grid-4" style={{ marginTop: 18 }}>
-        <Kpi label="Minimum" value={fmtNumber(stats.minimum)} hint={valueLabels[module]} />
-        <Kpi label="Maximum" value={fmtNumber(stats.maximum)} hint={valueLabels[module]} />
-        <Kpi label="Sans GPS" value={v(stats.sans_gps)} hint="Sites non cartographiables" />
-        <Kpi label="Dernière donnée" value={v(stats.derniere_observation)} hint="Date observation" />
-      </div>
-
-      <div className="panel" style={{ marginTop: 18 }}>
-        <div className="grid-4">
-          <Kpi label="Historique synchronisé" value={v(stats.historique_synchronise)} hint="Avant/après seuil opérationnel" />
-          <Kpi label="Non exploitables" value={v(stats.non_exploitables)} hint="Station non résolue" />
-          <Kpi label="Dates futures" value={v(stats.donnees_futures_a_verifier)} hint="À vérifier, exclues des calculs" />
-          <Kpi label="Seuil opérationnel" value={v(stats.seuil_operationnel)} hint="Date de bascule test → réel" />
-        </div>
-      </div>
-
-      <div className="panel" style={{ marginTop: 18 }}>
-        <h2>Interprétation automatique</h2>
-        <p className="muted">{loading ? "Analyse en cours..." : interpretation(module, stats)}</p>
-      </div>
-
-      <div className="grid-2" style={{ marginTop: 18 }}>
-        <MiniBarChart title="Répartition par commune" data={(json?.charts?.communes || []).slice(0, 10)} />
-        <MiniBarChart title="Évolution récente" data={(json?.charts?.evolution || []).slice(-12)} />
-      </div>
-
-      <div className="grid-2" style={{ marginTop: 18 }}>
-        <MiniBarChart title="Top sites / stations" data={(json?.charts?.sites || []).slice(0, 10)} />
-        <MiniBarChart title="Alertes par type" data={(json?.charts?.alertes || []).slice(0, 10)} />
-      </div>
-
-      <div className="panel" style={{ marginTop: 18 }}>
-        <h2>Carte du module</h2>
-        <LeafletMap module={module} />
-      </div>
-
-      <div className="panel" style={{ marginTop: 18 }}>
-        <h2>Données récentes</h2>
-        <div className="table-wrap">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Date</th><th>Site</th><th>Commune</th><th>{valueLabels[module]}</th><th>Alerte</th><th>Observateur</th><th>Commentaire</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.slice(0, 150).map((r: any, i: number) => {
-                const isAlert = Boolean(r.alerte_valeur || r.alerte_gps || r.alerte_donnee);
-                return <tr key={r.id || i}>
-                  <td>{v(r.date_observation)}</td>
-                  <td>{v(r.code_site || r.code_station || r.code_piezo)}</td>
-                  <td>{v(r.commune)}</td>
-                  <td>{fmtNumber(r.valeur_observee || r.pluie_24h_mm || r.niveau_statique || r.hauteur_eau)}</td>
-                  <td><span className={isAlert ? "badge danger" : "badge ok"}>{isAlert ? "À vérifier" : "OK"}</span></td>
-                  <td>{v(r.observateur)}</td>
-                  <td>{v(r.commentaire)}</td>
-                </tr>;
-              })}
-              {!rows.length && <tr><td colSpan={7}>Aucune donnée pour les filtres sélectionnés.</td></tr>}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <div className="grid-4" style={{ marginTop: 18 }}><Kpi label="Observations opérationnelles" value={v(stats.observations)} hint={stats.seuil_operationnel ? `Depuis le ${stats.seuil_operationnel}` : "Toutes données exploitables"} /><Kpi label="Sites du réseau" value={v(stats.sites)} hint={`${v(stats.sites_avec_donnees)} avec données · couverture ${v(stats.couverture_pct)}%`} /><Kpi label={`Moyenne ${unitLabels[module]}`} value={fmtNumber(stats.moyenne)} hint={valueLabels[module]} /><Kpi label="Alertes" value={v(stats.alertes)} hint="Contrôle qualité" /></div>
+      <div className="grid-4" style={{ marginTop: 18 }}><Kpi label="Minimum" value={fmtNumber(stats.minimum)} hint={valueLabels[module]} /><Kpi label="Maximum" value={fmtNumber(stats.maximum)} hint={valueLabels[module]} /><Kpi label="Sans GPS" value={v(stats.sans_gps)} hint="Sites non cartographiables" /><Kpi label="Dernière donnée" value={v(stats.derniere_observation)} hint="Date observation" /></div>
+      <div className="panel" style={{ marginTop: 18 }}><div className="grid-4"><Kpi label="Historique synchronisé" value={v(stats.historique_synchronise)} hint="Avant/après seuil opérationnel" /><Kpi label="Non exploitables" value={v(stats.non_exploitables)} hint="Station non résolue" /><Kpi label="Dates futures" value={v(stats.donnees_futures_a_verifier)} hint="À vérifier, exclues des calculs" /><Kpi label="Seuil opérationnel" value={v(stats.seuil_operationnel)} hint="Date de bascule test → réel" /></div></div>
+      <div className="panel" style={{ marginTop: 18 }}><h2>Interprétation automatique</h2><p className="muted">{loading ? "Analyse en cours..." : interpretation(module, stats)}</p></div>
+      <div className="grid-2" style={{ marginTop: 18 }}><MiniBarChart title="Répartition par commune" data={(json?.charts?.communes || []).slice(0, 10)} /><MiniBarChart title="Évolution récente" data={(json?.charts?.evolution || []).slice(-12)} /></div>
+      <div className="grid-2" style={{ marginTop: 18 }}><MiniBarChart title="Top sites / stations" data={(json?.charts?.sites || []).slice(0, 10)} /><MiniBarChart title="Alertes par type" data={(json?.charts?.alertes || []).slice(0, 10)} /></div>
+      <div className="panel" style={{ marginTop: 18 }}><h2>Carte du module</h2><LeafletMap module={module} /></div>
+      <div className="panel" style={{ marginTop: 18 }}><h2>Données récentes</h2><div className="table-wrap"><table className="table"><thead><tr><th>Date</th><th>Site</th><th>Commune</th><th>{valueLabels[module]}</th><th>Alerte</th><th>Observateur</th><th>Commentaire</th></tr></thead><tbody>{rows.slice(0, 150).map((r: any, i: number) => {const isAlert = Boolean(r.alerte_valeur || r.alerte_gps || r.alerte_donnee);return <tr key={r.id || i}><td>{v(r.date_observation)}</td><td>{v(r.code_site || r.code_station || r.code_piezo)}</td><td>{v(r.commune)}</td><td>{fmtNumber(r.valeur_observee || r.pluie_24h_mm || r.niveau_statique || r.hauteur_eau)}</td><td><span className={isAlert ? "badge danger" : "badge ok"}>{isAlert ? "À vérifier" : "OK"}</span></td><td>{v(r.observateur)}</td><td>{v(r.commentaire)}</td></tr>})}{!rows.length && <tr><td colSpan={7}>Aucune donnée pour les filtres sélectionnés.</td></tr>}</tbody></table></div></div>
     </>
   );
 }
