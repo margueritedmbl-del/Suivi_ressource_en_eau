@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "verify:project": "node scripts/verify-project.mjs && node scripts/verify-v5-2.mjs",
     "render:health": "node -e \"fetch('http://localhost:'+(process.env.PORT||3000)+'/api/health').then(r=>r.text()).then(console.log)\"",
-    "prebuild": "node scripts/verify-render-files.mjs && node scripts/verify-v5-2.mjs",
+    "prebuild": "node scripts/apply-v5-quality-fix.mjs && node scripts/verify-render-files.mjs && node scripts/verify-v5-2.mjs",
     "verify:render": "node scripts/verify-render-files.mjs",
     "storage:upload": "node scripts/upload-storage-assets.mjs"
   },
