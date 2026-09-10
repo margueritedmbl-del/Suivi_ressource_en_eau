@@ -1,142 +1,16 @@
 "use client";
-
 import { useEffect, useMemo, useState } from "react";
 import Kpi from "@/components/Kpi";
 import LeafletMap from "@/components/map/LeafletMap";
 import MiniBarChart from "@/components/dashboard/MiniBarChart";
 import { downloadAuthenticated } from "@/lib/download-client";
 import { useRole } from "@/components/auth/useRole";
-
-type ModuleName = "pluviometrie" | "piezometrie" | "limnimetrie";
-
-const moduleLabels: Record<ModuleName, string> = {
-  pluviometrie: "Pluviométrie",
-  piezometrie: "Piézométrie",
-  limnimetrie: "Limnimétrie",
-};
-
-const valueLabels: Record<ModuleName, string> = {
-  pluviometrie: "Pluie 24h",
-  piezometrie: "Niveau statique",
-  limnimetrie: "Hauteur d’eau",
-};
-
-const unitLabels: Record<ModuleName, string> = {
-  pluviometrie: "mm",
-  piezometrie: "m",
-  limnimetrie: "m / cm",
-};
-
-function v(x: any) {
-  return x === null || x === undefined || x === "" ? "--" : String(x);
-}
-
-function fmtNumber(x: any, unit = "") {
-  if (x === null || x === undefined || x === "") return "--";
-  const n = Number(x);
-  if (!Number.isFinite(n)) return String(x);
-  return `${Math.round(n * 100) / 100}${unit ? ` ${unit}` : ""}`;
-}
-
-function buildParams(filters: Record<string, string>) {
-  const params = new URLSearchParams();
-  for (const [k, val] of Object.entries(filters)) {
-    if (val && val !== "all") params.set(k, val);
-  }
-  return params;
-}
-
-function interpretation(module: ModuleName, stats: any) {
-  const alerts = Number(stats.alertes || 0);
-  const obs = Number(stats.observations || 0);
-  const missingGps = Number(stats.sans_gps || 0);
-  const nonExploitables = Number(stats.non_exploitables || 0);
-  const futures = Number(stats.donnees_futures_a_verifier || 0);
-  if (!obs && nonExploitables > 0) return `${nonExploitables} enregistrement(s) synchronisé(s) ne sont pas exploitables car leur station n’a pas pu être rapprochée du référentiel canonique.`;
-  if (futures > 0) return `${futures} donnée(s) portent une date future et sont exclues provisoirement des calculs. Les autres mesures exploitables sont analysées normalement.`;
-  if (!obs) return "Aucune observation exploitable pour ce filtre. Lancez une synchronisation ou élargissez la période.";
-  if (nonExploitables > 0) return `${nonExploitables} enregistrement(s) ont été exclus des analyses car le code de station n’est pas reconnu dans le référentiel officiel. Les ${obs} observation(s) affichée(s) sont rattachées à une station physique identifiée.`;
-  if (alerts > 0) return `${alerts} observation(s) nécessitent une vérification. Priorité : contrôler les valeurs aberrantes et les coordonnées GPS manquantes.`;
-  if (missingGps > 0) return `${missingGps} site(s) sans coordonnées GPS. La donnée est exploitable en tableau mais pas en cartographie.`;
-  if (module === "pluviometrie") return "Les relevés pluviométriques filtrés ne présentent pas d’alerte automatique. Surveillez les cumuls extrêmes et les périodes sans collecte.";
-  if (module === "piezometrie") return "Les mesures piézométriques filtrées sont cohérentes selon les contrôles automatiques. Suivez les tendances de baisse sur plusieurs campagnes.";
-  return "Les lectures limnimétriques filtrées sont cohérentes selon les contrôles automatiques. Suivez les variations rapides entre matin et soir.";
-}
-
-export default function ThematicModuleDashboard({ module }: { module: ModuleName }) {
-  const { canExportCsvXlsx } = useRole();
-  const [json, setJson] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [commune, setCommune] = useState("all");
-  const [site, setSite] = useState("all");
-  const [alerte, setAlerte] = useState("all");
-  const [start, setStart] = useState("");
-  const [end, setEnd] = useState("");
-  const [refreshToken, setRefreshToken] = useState(0);
-  const [exporting, setExporting] = useState("");
-  const [exportError, setExportError] = useState("");
-
-  const params = useMemo(() => buildParams({ module, commune, site, alerte, start, end }), [module, commune, site, alerte, start, end]);
-
-  useEffect(() => {
-    setLoading(true);
-    fetch(`/api/dashboard/module?${params.toString()}`, { cache: "no-store" })
-      .then((r) => r.json())
-      .then(setJson)
-      .finally(() => setLoading(false));
-  }, [params, refreshToken]);
-
-  useEffect(() => {
-    const onSync = (event: Event) => { const detail=(event as CustomEvent).detail; if (!detail?.module || detail.module===module) setRefreshToken((x)=>x+1); };
-    window.addEventListener("psore-sync-complete", onSync);
-    return () => window.removeEventListener("psore-sync-complete", onSync);
-  }, [module]);
-
-  const stats = json?.stats || {};
-  const rows = json?.data || [];
-  const filters = json?.filters || {};
-  const exportQuery = params.toString();
-  async function exportData(format: "csv" | "xlsx") {
-    setExporting(format); setExportError("");
-    try { await downloadAuthenticated(`/api/reports/export-v2?module=${module}&periode=personnalisee&format=${format}${exportQuery ? `&${exportQuery}` : ""}`, `PSORE_${module}.${format}`); }
-    catch (e:any) { setExportError(e?.message || "Export impossible"); }
-    finally { setExporting(""); }
-  }
-
-  return (
-    <>
-      <div className="panel filters-panel">
-        <div>
-          <h2>Analyse dynamique — {moduleLabels[module]}</h2>
-          <p className="muted">
-            KPI, filtres, carte, évolution temporelle, tableau et exports. Source : {json?.source || "chargement"}
-          </p>
-        </div>
-
-        <div className="filters-grid compact filters-grid-wide">
-          <label><span>Commune</span><select className="input" value={commune} onChange={(e) => { setCommune(e.target.value); setSite("all"); }}><option value="all">Toutes</option>{(filters.communes || []).map((c: string) => <option key={c} value={c}>{c}</option>)}</select></label>
-          <label><span>Site / station</span><select className="input" value={site} onChange={(e) => setSite(e.target.value)}><option value="all">Tous</option>{(filters.sites || []).map((s: string) => <option key={s} value={s}>{s}</option>)}</select></label>
-          <label><span>Alerte</span><select className="input" value={alerte} onChange={(e) => setAlerte(e.target.value)}><option value="all">Toutes les données</option><option value="yes">Alertes seulement</option><option value="no">Sans alerte</option></select></label>
-          <label><span>Début</span><input className="input" type="date" value={start} onChange={(e) => setStart(e.target.value)} /></label>
-          <label><span>Fin</span><input className="input" type="date" value={end} onChange={(e) => setEnd(e.target.value)} /></label>
-        </div>
-
-        <div className="quick-actions">
-          {canExportCsvXlsx && <button className="btn btn-primary" disabled={!!exporting} onClick={() => exportData("csv")}>{exporting==="csv"?"Téléchargement…":"Exporter CSV"}</button>}
-          {canExportCsvXlsx && <button className="btn btn-soft" disabled={!!exporting} onClick={() => exportData("xlsx")}>{exporting==="xlsx"?"Téléchargement…":"Exporter Excel"}</button>}
-          <button className="btn btn-soft" onClick={() => { setCommune("all"); setSite("all"); setAlerte("all"); setStart(""); setEnd(""); }}>Réinitialiser</button>
-        </div>
-        {exportError && <div className="alert warn" style={{marginTop:10}}>{exportError}</div>}
-      </div>
-
-      <div className="grid-4" style={{ marginTop: 18 }}><Kpi label="Observations opérationnelles" value={v(stats.observations)} hint={stats.seuil_operationnel ? `Depuis le ${stats.seuil_operationnel}` : "Toutes données exploitables"} /><Kpi label="Sites du réseau" value={v(stats.sites)} hint={`${v(stats.sites_avec_donnees)} avec données · couverture ${v(stats.couverture_pct)}%`} /><Kpi label={`Moyenne ${unitLabels[module]}`} value={fmtNumber(stats.moyenne)} hint={valueLabels[module]} /><Kpi label="Alertes" value={v(stats.alertes)} hint="Contrôle qualité" /></div>
-      <div className="grid-4" style={{ marginTop: 18 }}><Kpi label="Minimum" value={fmtNumber(stats.minimum)} hint={valueLabels[module]} /><Kpi label="Maximum" value={fmtNumber(stats.maximum)} hint={valueLabels[module]} /><Kpi label="Sans GPS" value={v(stats.sans_gps)} hint="Sites non cartographiables" /><Kpi label="Dernière donnée" value={v(stats.derniere_observation)} hint="Date observation" /></div>
-      <div className="panel" style={{ marginTop: 18 }}><div className="grid-4"><Kpi label="Historique synchronisé" value={v(stats.historique_synchronise)} hint="Avant/après seuil opérationnel" /><Kpi label="Non exploitables" value={v(stats.non_exploitables)} hint="Station non résolue" /><Kpi label="Dates futures" value={v(stats.donnees_futures_a_verifier)} hint="À vérifier, exclues des calculs" /><Kpi label="Seuil opérationnel" value={v(stats.seuil_operationnel)} hint="Date de bascule test → réel" /></div></div>
-      <div className="panel" style={{ marginTop: 18 }}><h2>Interprétation automatique</h2><p className="muted">{loading ? "Analyse en cours..." : interpretation(module, stats)}</p></div>
-      <div className="grid-2" style={{ marginTop: 18 }}><MiniBarChart title="Répartition par commune" data={(json?.charts?.communes || []).slice(0, 10)} /><MiniBarChart title="Évolution récente" data={(json?.charts?.evolution || []).slice(-12)} /></div>
-      <div className="grid-2" style={{ marginTop: 18 }}><MiniBarChart title="Top sites / stations" data={(json?.charts?.sites || []).slice(0, 10)} /><MiniBarChart title="Alertes par type" data={(json?.charts?.alertes || []).slice(0, 10)} /></div>
-      <div className="panel" style={{ marginTop: 18 }}><h2>Carte du module</h2><LeafletMap module={module} /></div>
-      <div className="panel" style={{ marginTop: 18 }}><h2>Données récentes</h2><div className="table-wrap"><table className="table"><thead><tr><th>Date</th><th>Site</th><th>Commune</th><th>{valueLabels[module]}</th><th>Alerte</th><th>Observateur</th><th>Commentaire</th></tr></thead><tbody>{rows.slice(0, 150).map((r: any, i: number) => {const isAlert = Boolean(r.alerte_valeur || r.alerte_gps || r.alerte_donnee);return <tr key={r.id || i}><td>{v(r.date_observation)}</td><td>{v(r.code_site || r.code_station || r.code_piezo)}</td><td>{v(r.commune)}</td><td>{fmtNumber(r.valeur_observee || r.pluie_24h_mm || r.niveau_statique || r.hauteur_eau)}</td><td><span className={isAlert ? "badge danger" : "badge ok"}>{isAlert ? "À vérifier" : "OK"}</span></td><td>{v(r.observateur)}</td><td>{v(r.commentaire)}</td></tr>})}{!rows.length && <tr><td colSpan={7}>Aucune donnée pour les filtres sélectionnés.</td></tr>}</tbody></table></div></div>
-    </>
-  );
-}
+type ModuleName="pluviometrie"|"piezometrie"|"limnimetrie";
+const labels={pluviometrie:"Pluviométrie",piezometrie:"Piézométrie",limnimetrie:"Limnimétrie"};
+const values={pluviometrie:"Pluie 24h",piezometrie:"Niveau statique",limnimetrie:"Hauteur d’eau"};
+function v(x:any){return x===null||x===undefined||x===""?"--":String(x)}
+function fmt(x:any,u=""){if(x===null||x===undefined||x==="")return"--";const n=Number(x);return Number.isFinite(n)?`${Math.round(n*100)/100}${u?` ${u}`:""}`:String(x)}
+function params(f:Record<string,string>){const p=new URLSearchParams();for(const[k,x]of Object.entries(f))if(x&&x!=="all")p.set(k,x);return p}
+function interpretation(m:ModuleName,s:any){if(Number(s.donnees_futures_a_verifier||0)>0)return`${s.donnees_futures_a_verifier} donnée(s) future(s) sont exclues provisoirement des indicateurs.`;if(!s.observations)return"Aucune observation validée pour les filtres sélectionnés.";if(m==="piezometrie")return`Remontée moyenne : ${fmt(s.remontee_moyenne_m,"m")} (${fmt(s.taux_moyen_communes_pct,"%")}). Taux global calculé sur les stations : ${fmt(s.taux_global_stations_pct,"%")}.`;if(m==="limnimetrie")return"Les mesures limnimétriques caractérisent le niveau des cours d’eau au droit des stations où elles sont implantées.";return"Les indicateurs utilisent uniquement les données validées après contrôle qualité."}
+export default function ThematicModuleDashboard({module}:{module:ModuleName}){const{canExportCsvXlsx}=useRole();const[json,setJson]=useState<any>(null),[loading,setLoading]=useState(false),[commune,setCommune]=useState("all"),[site,setSite]=useState("all"),[alerte,setAlerte]=useState("all"),[start,setStart]=useState(""),[end,setEnd]=useState(""),[refresh,setRefresh]=useState(0),[exporting,setExporting]=useState(""),[error,setError]=useState("");const p=useMemo(()=>params({module,commune,site,alerte,start,end}),[module,commune,site,alerte,start,end]);useEffect(()=>{setLoading(true);fetch(`/api/dashboard/module?${p.toString()}`,{cache:"no-store"}).then(r=>r.json()).then(setJson).finally(()=>setLoading(false))},[p,refresh]);useEffect(()=>{const f=(e:Event)=>{const d=(e as CustomEvent).detail;if(!d?.module||d.module===module)setRefresh(x=>x+1)};window.addEventListener("psore-sync-complete",f);return()=>window.removeEventListener("psore-sync-complete",f)},[module]);const s=json?.stats||{},rows=json?.data||[],filters=json?.filters||{};async function exportData(f:"csv"|"xlsx"){setExporting(f);setError("");try{await downloadAuthenticated(`/api/reports/export-v4?module=${module}&format=${f}${start?`&start=${start}`:""}${end?`&end=${end}`:""}`,`PSORE_${module}.${f}`)}catch(e:any){setError(e?.message||"Export impossible")}finally{setExporting("")}}
+return<><div className="panel filters-panel"><h2>Analyse dynamique — {labels[module]}</h2><p className="muted">KPI, filtres, qualité, carte, évolution et exports validés. Source : {json?.source||"chargement"}</p><div className="filters-grid compact filters-grid-wide"><label><span>Commune</span><select className="input" value={commune} onChange={e=>{setCommune(e.target.value);setSite("all")}}><option value="all">Toutes</option>{(filters.communes||[]).map((x:string)=><option key={x}>{x}</option>)}</select></label><label><span>Station</span><select className="input" value={site} onChange={e=>setSite(e.target.value)}><option value="all">Toutes</option>{(filters.sites||[]).map((x:string)=><option key={x}>{x}</option>)}</select></label><label><span>Alerte</span><select className="input" value={alerte} onChange={e=>setAlerte(e.target.value)}><option value="all">Toutes</option><option value="yes">À vérifier</option><option value="no">Validées</option></select></label><label><span>Début</span><input className="input" type="date" value={start} onChange={e=>setStart(e.target.value)}/></label><label><span>Fin</span><input className="input" type="date" value={end} onChange={e=>setEnd(e.target.value)}/></label></div><div className="quick-actions">{canExportCsvXlsx&&<><button className="btn btn-primary" disabled={!!exporting} onClick={()=>exportData("csv")}>{exporting==="csv"?"Téléchargement…":"Exporter CSV validé"}</button><button className="btn btn-soft" disabled={!!exporting} onClick={()=>exportData("xlsx")}>{exporting==="xlsx"?"Téléchargement…":"Exporter Excel"}</button></>}<button className="btn btn-soft" onClick={()=>{setCommune("all");setSite("all");setAlerte("all");setStart("");setEnd("")}}>Réinitialiser</button></div>{error&&<div className="alert warn">{error}</div>}</div><div className="grid-4" style={{marginTop:18}}><Kpi label="Observations validées" value={v(s.observations)} hint="Après contrôle qualité"/><Kpi label="Sites du réseau" value={v(s.sites)} hint={`${v(s.sites_avec_donnees)} avec données · couverture ${v(s.couverture_pct)}%`}/><Kpi label={`Moyenne ${module==="piezometrie"?"m":""}`} value={fmt(s.moyenne)} hint={values[module]}/><Kpi label="À vérifier" value={v(s.alertes)} hint="Exclues des indicateurs"/></div>{module==="piezometrie"&&<div className="grid-4" style={{marginTop:18}}><Kpi label="Remontée moyenne" value={fmt(s.remontee_moyenne_m,"m")} hint="Moyenne des communes pondérée par mesures"/><Kpi label="Taux moyen communes" value={fmt(s.taux_moyen_communes_pct,"%")} hint="Moyenne des taux communaux"/><Kpi label="Remontée globale stations" value={fmt(s.remontee_global_stations_m,"m")} hint="Calcul pondéré par mesures"/><Kpi label="Taux global stations" value={fmt(s.taux_global_stations_pct,"%")} hint="Calcul pondéré par mesures"/></div>}<div className="grid-4" style={{marginTop:18}}><Kpi label="Minimum" value={fmt(s.minimum)} hint={values[module]}/><Kpi label="Maximum" value={fmt(s.maximum)} hint={values[module]}/><Kpi label="Sans GPS" value={v(s.sans_gps)} hint="Non cartographiables"/><Kpi label="Dernière donnée" value={v(s.derniere_observation)} hint="Date"/></div><div className="panel" style={{marginTop:18}}><h2>Interprétation automatique</h2><p className="muted">{loading?"Analyse en cours…":interpretation(module,s)}</p></div><div className="grid-2" style={{marginTop:18}}><MiniBarChart title="Répartition par commune" data={(json?.charts?.communes||[]).slice(0,10)}/><MiniBarChart title="Évolution récente" data={(json?.charts?.evolution||[]).slice(-12)}/></div><div className="grid-2" style={{marginTop:18}}><MiniBarChart title="Top stations" data={(json?.charts?.sites||[]).slice(0,10)}/><MiniBarChart title="Alertes" data={(json?.charts?.alertes||[]).slice(0,10)}/></div><div className="panel" style={{marginTop:18}}><h2>Carte du module</h2><LeafletMap module={module}/></div><div className="panel" style={{marginTop:18}}><h2>Données récentes</h2><div className="table-wrap"><table className="table"><thead><tr><th>Date</th><th>Station</th><th>Commune</th><th>Valeur</th><th>Statut</th></tr></thead><tbody>{rows.slice(0,150).map((r:any,i:number)=>{const a=Boolean(r.alerte_valeur||r.alerte_gps||r.alerte_donnee);return<tr key={r.id||i}><td>{v(r.date_observation)}</td><td>{v(r.code_site||r.code_station||r.code_piezo)}</td><td>{v(r.commune)}</td><td>{fmt(r.valeur_observee||r.pluie_24h_mm||r.niveau_statique||r.hauteur_eau)}</td><td><span className={a?"badge danger":"badge ok"}>{a?"À vérifier":"Validée"}</span></td></tr>})}{!rows.length&&<tr><td colSpan={5}>Aucune donnée.</td></tr>}</tbody></table></div></div></>}
