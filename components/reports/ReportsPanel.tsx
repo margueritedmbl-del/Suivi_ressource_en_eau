@@ -14,7 +14,7 @@ export default function ReportsPanel() {
   const [busy, setBusy] = useState("");
   const [msg, setMsg] = useState("");
   const isSubBasin = module === "sous_bassin";
-  const isHydro = HYDRO.has(module);
+  const isInventory = module === "points_eau";
   const query = useMemo(() => {
     const p = new URLSearchParams({ module });
     if (isSubBasin) p.set("sb", sb);
@@ -28,8 +28,8 @@ export default function ReportsPanel() {
     setBusy(`${scope}-${format}`);
     setMsg("");
     try {
-      const endpoint = module === "points_eau" ? "/api/reports/export-v2" : "/api/reports/export-v5";
-      const suffix = endpoint.endsWith("export-v5") && !isSubBasin ? `&scope=${scope}` : "";
+      const endpoint = isInventory ? "/api/reports/export-points-eau-v5" : "/api/reports/export-v5";
+      const suffix = !isSubBasin ? `&scope=${scope}` : "";
       const r = await authFetch(`${endpoint}?${query}&format=${format}${suffix}`);
       if (!r.ok) {
         const body = await r.json().catch(() => ({}));
@@ -74,7 +74,7 @@ export default function ReportsPanel() {
             <option value="pluviometrie">Pluviométrie</option>
             <option value="piezometrie">Piézométrie</option>
             <option value="limnimetrie">Limnimétrie</option>
-            <option value="points_eau">Points d'eau — inventaire</option>
+            <option value="points_eau">Points d’eau — inventaire</option>
             <option value="sous_bassin">Rapport intégré de sous-bassin</option>
           </select>
         </label>
@@ -111,11 +111,11 @@ export default function ReportsPanel() {
         </div>
       </div>
 
-      {isHydro && (
+      {!isSubBasin && (
         <div style={{ marginTop: 18 }}>
           <h3 style={{ marginBottom: 8 }}>Export des données sources + qualité</h3>
           <p className="muted" style={{ marginTop: 0 }}>
-            Les observations collectées sont conservées avec leur statut : Validée, À vérifier, Rejetée ou Doublon certain. Ces données ne contaminent pas les indicateurs validés.
+            Les observations ou fiches collectées sont conservées avec leur statut : Validée, À vérifier, Rejetée ou Doublon certain. Elles ne contaminent pas les indicateurs analytiques.
           </p>
           <div className="report-grid">
             {sourceFormats.map(format => (
