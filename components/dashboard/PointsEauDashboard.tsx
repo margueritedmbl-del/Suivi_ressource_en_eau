@@ -87,8 +87,8 @@ export default function PointsEauDashboard() {
     return rows.filter((r: any) => [r.code_pe, r.commune, r.village, r.localite, r.type_infrastructure, r.recommandation].some((x) => String(x || "").toLowerCase().includes(q)));
   }, [json, search]);
 
-  const exportCsv = `/api/points-eau/export?format=csv${qs ? `&${qs}` : ""}`;
-  const exportXlsx = `/api/points-eau/export?format=xlsx${qs ? `&${qs}` : ""}`;
+  const exportCsv = `/api/reports/export-v2?module=points_eau&periode=personnalisee&format=csv${qs ? `&${qs}` : ""}`;
+  const exportXlsx = `/api/reports/export-v2?module=points_eau&periode=personnalisee&format=xlsx${qs ? `&${qs}` : ""}`;
 
   return (
     <>
