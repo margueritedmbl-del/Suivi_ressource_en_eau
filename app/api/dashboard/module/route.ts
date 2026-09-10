@@ -7,112 +7,25 @@ import { distinctOfficialSites, networkTotal, NETWORK_STATIONS, type HydroModule
 import { loadHydroRows } from "@/lib/hydro-data";
 
 type Row = Record<string, any>;
-type Cfg = { view: string; table: string; label: string; valueKey: string; dateKey: string; module: string; stationKey: string };
-
+type Cfg = { label: string; valueKey: string; dateKey: string; module: string };
 const CFG: Record<string, Cfg> = {
-  pluviometrie: { view: "v_pluviometrie_dashboard_v50", table: "observations_pluvio", label: "Pluviométrie", valueKey: "pluie_24h_mm", dateKey: "date_observation", module: "pluviometrie", stationKey: "code_site" },
-  piezometrie: { view: "v_piezometrie_dashboard_v50", table: "observations_piezo", label: "Piézométrie", valueKey: "niveau_statique", dateKey: "date_observation", module: "piezometrie", stationKey: "code_site" },
-  limnimetrie: { view: "v_limnimetrie_dashboard_v50", table: "observations_limni", label: "Limnimétrie", valueKey: "hauteur_eau", dateKey: "date_observation", module: "limnimetrie", stationKey: "code_site" },
+  pluviometrie: { label: "Pluviométrie", valueKey: "pluie_24h_mm", dateKey: "date_observation", module: "pluviometrie" },
+  piezometrie: { label: "Piézométrie", valueKey: "niveau_statique", dateKey: "date_observation", module: "piezometrie" },
+  limnimetrie: { label: "Limnimétrie", valueKey: "hauteur_eau", dateKey: "date_observation", module: "limnimetrie" },
 };
-
-function text(v: any) { return String(v ?? "").trim(); }
-function num(v: any) { const raw = String(v ?? "").replace(",", ".").trim(); if (!raw) return null; const n = Number(raw); return Number.isFinite(n) ? n : null; }
-function dateText(v: any) { return text(v).slice(0, 10); }
+const text = (v: any) => String(v ?? "").trim();
+const num = (v: any) => { const raw = text(v).replace(",", "."); if (!raw) return null; const n = Number(raw); return Number.isFinite(n) ? n : null; };
+const dateText = (v: any) => text(v).slice(0, 10);
+const siteCode = (r: Row) => text(r.code_site || r.code_station || r.code_piezo || r.station_id || r.piezometre_id);
 function isAlert(r: Row) { return Boolean(r.alerte_valeur || r.alerte_gps || r.alerte_donnee || r.alerte_secheresse || r.alerte_crue); }
-function siteCode(r: Row) { return text(r.code_site || r.code_station || r.code_piezo || r.station_id || r.piezometre_id); }
-function counts(rows: Row[], key: string | ((r: Row) => string)) {
-  const m = new Map<string, number>();
-  rows.forEach((r) => { const k = typeof key === "function" ? key(r) : text(r[key]); const label = k || "Non renseigné"; m.set(label, (m.get(label) || 0) + 1); });
-  return Array.from(m.entries()).map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value || a.label.localeCompare(b.label));
-}
-function avg(rows: Row[], key: string) { const xs = rows.map((r) => num(r[key] ?? r.valeur_observee)).filter((x): x is number => x !== null); return xs.length ? Math.round((xs.reduce((a, b) => a + b, 0) / xs.length) * 100) / 100 : null; }
-function byDate(rows: Row[], dateKey: string, valueKey: string) {
-  const m = new Map<string, { n: number; sum: number }>();
-  rows.forEach((r) => {
-    const d = dateText(r[dateKey]) || "Non daté";
-    const val = num(r[valueKey] ?? r.valeur_observee);
-    const old = m.get(d) || { n: 0, sum: 0 };
-    if (val !== null) { old.n += 1; old.sum += val; } else old.n += 1;
-    m.set(d, old);
-  });
-  return Array.from(m.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([label, v]) => ({ label, value: v.n ? Math.round((v.sum / v.n) * 100) / 100 : 0 })).slice(-24);
-}
-function alertTypes(rows: Row[]) {
-  const out = [
-    { label: "Valeur", value: rows.filter((r) => r.alerte_valeur).length },
-    { label: "GPS", value: rows.filter((r) => r.alerte_gps).length },
-    { label: "Donnée", value: rows.filter((r) => r.alerte_donnee).length },
-    { label: "Seuil sécheresse", value: rows.filter((r) => r.alerte_secheresse).length },
-    { label: "Seuil crue", value: rows.filter((r) => r.alerte_crue).length },
-  ].filter((x) => x.value > 0);
-  return out.length ? out : [{ label: "Aucune alerte", value: 0 }];
-}
-
-async function readRows(moduleName: HydroModule, cfg: Cfg) {
-  const loaded = await loadHydroRows(moduleName);
-  return { rows: loaded.rows as Row[], historicalRows: loaded.historicalRows as Row[], futureRows: (loaded.futureRows || []) as Row[], source: loaded.source, rejected: loaded.rejected || 0, cutoff: loaded.cutoff || "" };
-}
-
-function applyFilters(rows: Row[], req: NextRequest, cfg: Cfg) {
-  const commune = req.nextUrl.searchParams.get("commune");
-  const site = req.nextUrl.searchParams.get("site");
-  const start = req.nextUrl.searchParams.get("start");
-  const end = req.nextUrl.searchParams.get("end");
-  const alerte = req.nextUrl.searchParams.get("alerte");
-  let filtered = rows;
-  if (commune && commune !== "all") filtered = filtered.filter((r) => text(r.commune) === commune);
-  if (site && site !== "all") filtered = filtered.filter((r) => siteCode(r) === site);
-  if (start) filtered = filtered.filter((r) => dateText(r[cfg.dateKey]) >= start);
-  if (end) filtered = filtered.filter((r) => dateText(r[cfg.dateKey]) <= end);
-  if (alerte === "yes") filtered = filtered.filter(isAlert);
-  if (alerte === "no") filtered = filtered.filter((r) => !isAlert(r));
-  return filtered;
-}
-
-export async function GET(req: NextRequest) {
-  const moduleName = req.nextUrl.searchParams.get("module") || "pluviometrie";
-  const cfg = CFG[moduleName];
-  if (!cfg) return NextResponse.json({ ok: false, error: "Module invalide" }, { status: 400 });
-
-  const { rows: rawRows, historicalRows, futureRows, source, rejected, cutoff } = await readRows(moduleName as HydroModule, cfg);
-  const rows = applyFilters(rawRows, req, cfg);
-  const values = rows.map((r) => num(r[cfg.valueKey] ?? r.valeur_observee)).filter((x): x is number => x !== null);
-  const latest = [...rows].sort((a, b) => dateText(b[cfg.dateKey]).localeCompare(dateText(a[cfg.dateKey]))).slice(0, 500);
-  const hydroModule = moduleName as HydroModule;
-  const officialSites = distinctOfficialSites(hydroModule, rows);
-  const gpsMissingSites = new Set(rows.filter((r) => r.alerte_gps || r.latitude === null || r.longitude === null).map(siteCode).filter(Boolean));
-
-  return NextResponse.json({
-    ok: true,
-    source,
-    module: cfg.module,
-    label: cfg.label,
-    stats: {
-      observations: rows.length,
-      sites: networkTotal(hydroModule),
-      sites_avec_donnees: officialSites.size,
-      couverture_pct: networkTotal(hydroModule) ? Math.round(officialSites.size / networkTotal(hydroModule) * 100) : 0,
-      moyenne: avg(rows, cfg.valueKey),
-      minimum: values.length ? Math.min(...values) : null,
-      maximum: values.length ? Math.max(...values) : null,
-      alertes: rows.filter(isAlert).length,
-      sans_gps: gpsMissingSites.size,
-      non_exploitables: rejected,
-      historique_synchronise: historicalRows.length,
-      donnees_futures_a_verifier: futureRows.length,
-      seuil_operationnel: cutoff || null,
-      derniere_observation: latest[0] ? dateText(latest[0][cfg.dateKey]) : null,
-    },
-    charts: {
-      communes: counts(rows, "commune"),
-      sites: counts(rows, siteCode),
-      evolution: byDate(rows, cfg.dateKey, cfg.valueKey),
-      alertes: alertTypes(rows),
-    },
-    filters: {
-      communes: Array.from(new Set(NETWORK_STATIONS[hydroModule].map(x => x.commune).filter(Boolean) as string[])).sort((a,b)=>a.localeCompare(b,"fr")),
-      sites: NETWORK_STATIONS[hydroModule].map(x => x.code),
-    },
-    data: latest,
-  });
-}
+function counts(rows: Row[], key: string | ((r: Row) => string)) { const m = new Map<string, number>(); rows.forEach(r => { const k = typeof key === "function" ? key(r) : text(r[key]); const label = k || "Non renseigné"; m.set(label, (m.get(label) || 0) + 1); }); return Array.from(m.entries()).map(([label, value]) => ({ label, value })).sort((a,b) => b.value-a.value || a.label.localeCompare(b.label)); }
+function avg(rows: Row[], key: string) { const xs = rows.map(r => num(r[key] ?? r.valeur_observee)).filter((x): x is number => x !== null); return xs.length ? Math.round(xs.reduce((a,b)=>a+b,0)/xs.length*100)/100 : null; }
+function byDate(rows: Row[], dateKey: string, valueKey: string) { const m = new Map<string,{n:number,sum:number}>(); rows.forEach(r=>{const d=dateText(r[dateKey])||"Non daté",v=num(r[valueKey]??r.valeur_observee),z=m.get(d)||{n:0,sum:0};if(v!==null){z.n++;z.sum+=v;}m.set(d,z);});return Array.from(m.entries()).sort(([a],[b])=>a.localeCompare(b)).map(([label,v])=>({label,value:v.n?Math.round(v.sum/v.n*100)/100:0})).slice(-24); }
+function alertTypes(rows: Row[]) { const out=[{label:"Valeur",value:rows.filter(r=>r.alerte_valeur).length},{label:"GPS",value:rows.filter(r=>r.alerte_gps).length},{label:"Donnée",value:rows.filter(r=>r.alerte_donnee).length},{label:"Seuil sécheresse",value:rows.filter(r=>r.alerte_secheresse).length},{label:"Seuil crue",value:rows.filter(r=>r.alerte_crue).length}].filter(x=>x.value>0);return out.length?out:[{label:"Aucune alerte",value:0}]; }
+function iqrBounds(rows: Row[], key: string) { const xs=rows.map(r=>num(r[key])).filter((x):x is number=>x!==null).sort((a,b)=>a-b);if(xs.length<4)return null;const q=(p:number)=>xs[Math.min(xs.length-1,Math.floor((xs.length-1)*p))],q1=q(.25),q3=q(.75),iqr=q3-q1;return{low:q1-1.5*iqr,high:q3+1.5*iqr}; }
+function quality(rows: Row[], cfg: Cfg) { const bounds=iqrBounds(rows,cfg.valueKey),counts=new Map<string,number>();for(const r of rows){const key=`${siteCode(r)}|${dateText(r[cfg.dateKey])}|${text(r.heure_observation||r.heure||r.time)}`;counts.set(key,(counts.get(key)||0)+1);}return rows.map(r=>{const v=num(r[cfg.valueKey]??r.valeur_observee),d=dateText(r[cfg.dateKey]),key=`${siteCode(r)}|${d}|${text(r.heure_observation||r.heure||r.time)}`,duplicate=(counts.get(key)||0)>1,gps=!Number.isFinite(num(r.latitude) as number)||!Number.isFinite(num(r.longitude) as number),future=d>new Date().toISOString().slice(0,10),atypical=Boolean(bounds&&v!==null&&(v<bounds.low||v>bounds.high));let status="Validée";if(duplicate)status="Doublon potentiel";else if(!siteCode(r)||!d||v===null||future||gps||atypical)status="À vérifier";return{...r,__status:status,__duplicate:duplicate,__gpsBad:gps,__future:future,__atypical:atypical};}); }
+function weighted(xs:{value:number,weight:number}[]){const w=xs.reduce((a,x)=>a+x.weight,0);return w?xs.reduce((a,x)=>a+x.value*x.weight,0)/w:null;}
+function piezoIndicators(rows: Row[]) { const valid=rows.filter(r=>r.__status==="Validée"),by=new Map<string,Row[]>();for(const r of valid){const c=siteCode(r),a=by.get(c)||[];a.push(r);by.set(c,a);}const stations:any[]=[];for(const [code,a] of by){a.sort((x,y)=>dateText(x.date_observation).localeCompare(dateText(y.date_observation)));if(a.length<2)continue;const first=num(a[0].niveau_statique),last=num(a[a.length-1].niveau_statique);if(first===null||last===null)continue;const delta=first-last;const rate=first!==0?delta/first*100:null;stations.push({code,commune:text(a[0].commune)||"Non renseignée",delta,rate,count:a.length});}const cm=new Map<string,any>();for(const s of stations){const z=cm.get(s.commune)||{commune:s.commune,deltas:[],rates:[],stations:0,observations:0};z.deltas.push({value:s.delta,weight:s.count});if(s.rate!==null)z.rates.push({value:s.rate,weight:s.count});z.stations++;z.observations+=s.count;cm.set(s.commune,z);}const communes=Array.from(cm.values()).map(z=>({...z,delta:weighted(z.deltas),rate:weighted(z.rates)}));const stationRate=weighted(stations.filter(s=>s.rate!==null).map(s=>({value:s.rate,weight:s.count})));const stationDelta=weighted(stations.map(s=>({value:s.delta,weight:s.count})));const validRates=communes.filter(c=>c.rate!==null);return{stationCount:stations.length,deltaStations:stationDelta,rateStations:stationRate,deltaCommunes:communes.length?communes.reduce((a,c)=>a+(c.delta||0),0)/communes.length:null,rateCommunes:validRates.length?validRates.reduce((a,c)=>a+c.rate,0)/validRates.length:null,communes}; }
+async function readRows(moduleName: HydroModule) { const loaded=await loadHydroRows(moduleName);return{rows:loaded.rows as Row[],historicalRows:loaded.historicalRows as Row[],futureRows:(loaded.futureRows||[]) as Row[],source:loaded.source,rejected:loaded.rejected||0,cutoff:loaded.cutoff||""}; }
+function applyFilters(rows: Row[], req: NextRequest, cfg: Cfg) { const p=req.nextUrl.searchParams,commune=p.get("commune"),site=p.get("site"),start=p.get("start"),end=p.get("end"),alerte=p.get("alerte");let out=rows;if(commune&&commune!=="all")out=out.filter(r=>text(r.commune)===commune);if(site&&site!=="all")out=out.filter(r=>siteCode(r)===site);if(start)out=out.filter(r=>dateText(r[cfg.dateKey])>=start);if(end)out=out.filter(r=>dateText(r[cfg.dateKey])<=end);if(alerte==="yes")out=out.filter(isAlert);if(alerte==="no")out=out.filter(r=>!isAlert(r));return out; }
+export async function GET(req: NextRequest) { const moduleName=req.nextUrl.searchParams.get("module")||"pluviometrie",cfg=CFG[moduleName];if(!cfg)return NextResponse.json({ok:false,error:"Module invalide"},{status:400});const loaded=await readRows(moduleName as HydroModule),filtered=applyFilters(loaded.rows,req,cfg),q=quality(filtered,cfg),valid=q.filter(r=>r.__status==="Validée"),values=valid.map(r=>num(r[cfg.valueKey]??r.valeur_observee)).filter((x):x is number=>x!==null),official=distinctOfficialSites(moduleName as HydroModule,valid),total=networkTotal(moduleName as HydroModule),latest=[...valid].sort((a,b)=>dateText(b[cfg.dateKey]).localeCompare(dateText(a[cfg.dateKey]))).slice(0,500),pi=moduleName==="piezometrie"?piezoIndicators(q):null;const gpsMissing=new Set(q.filter(r=>r.alerte_gps||!Number.isFinite(num(r.latitude) as number)||!Number.isFinite(num(r.longitude) as number)).map(siteCode).filter(Boolean));const qs={total:q.length,valid:valid.length,verify:q.filter(r=>r.__status==="À vérifier").length,duplicates:q.filter(r=>r.__duplicate).length,atypical:q.filter(r=>r.__atypical).length,gps:q.filter(r=>r.__gpsBad).length,future:q.filter(r=>r.__future).length};return NextResponse.json({ok:true,source:loaded.source,module:cfg.module,label:cfg.label,stats:{observations:valid.length,sites:total,sites_avec_donnees:official.size,couverture_pct:total?Math.round(official.size/total*100):0,moyenne:values.length?Math.round(values.reduce((a,b)=>a+b,0)/values.length*100)/100:null,minimum:values.length?Math.min(...values):null,maximum:values.length?Math.max(...values):null,alertes:qs.verify,sans_gps:gpsMissing.size,non_exploitables:loaded.rejected,historique_synchronise:loaded.historicalRows.length,donnees_futures_a_verifier:loaded.futureRows.length,seuil_operationnel:loaded.cutoff||null,derniere_observation:latest[0]?dateText(latest[0][cfg.dateKey]):null,...(pi?{remontee_moyenne_m:pi.deltaCommunes,taux_moyen_communes_pct:pi.rateCommunes,remontee_global_stations_m:pi.deltaStations,taux_global_stations_pct:pi.rateStations,communes_piezo:pi.communes}:{}),qualite:qs},charts:{communes:counts(valid,"commune"),sites:counts(valid,siteCode),evolution:byDate(valid,cfg.dateKey,cfg.valueKey),alertes:alertTypes(q)},filters:{communes:Array.from(new Set(NETWORK_STATIONS[moduleName as HydroModule].map(x=>x.commune).filter(Boolean) as string[])).sort((a,b)=>a.localeCompare(b,"fr")),sites:NETWORK_STATIONS[moduleName as HydroModule].map(x=>x.code)},data:latest}); }
