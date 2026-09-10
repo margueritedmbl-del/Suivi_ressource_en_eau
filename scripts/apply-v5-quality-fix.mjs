@@ -5,78 +5,79 @@ const routePath = resolve("app/api/reports/export-v5/route.ts");
 const panelPath = resolve("components/reports/ReportsPanel.tsx");
 let route = readFileSync(routePath, "utf8");
 
-const newQuality = `function quality(rows: HydroRow[], module: Hydro) {
-  const cfg = CFG[module];
-  // A duplicate is an exact repeated observation, not merely a repeated value.
-  // Same station/date with different hours is normal (morning/evening), and a
-  // stable piezometric level may legitimately repeat for days or weeks.
-  const exactCounts = new Map<string, number>();
-  const sameObservationCounts = new Map<string, number>();
-  for (const r of rows) {
-    const code = text(r.code_site || r.code_station || r.code_piezo);
-    const d = dateText(r.date_observation);
-    const h = observationHour(r);
-    const value = number(r[cfg.value]);
-    const identity = \`${code}|\${d}|\${h}|\${value === null ? "" : value}\`;
-    const slot = \`${code}|\${d}|\${h}\`;
-    exactCounts.set(identity, (exactCounts.get(identity) || 0) + 1);
-    sameObservationCounts.set(slot, (sameObservationCounts.get(slot) || 0) + 1);
-  }
-
-  const values = rows.map(r => number(r[cfg.value])).filter((x): x is number => x !== null).sort((a, b) => a - b);
-  const quartile = (p: number) => values[Math.floor((values.length - 1) * p)];
-  const bounds = values.length >= 4 ? (() => {
-    const q1 = quartile(.25), q3 = quartile(.75), iqr = q3 - q1;
-    return { lo: q1 - 1.5 * iqr, hi: q3 + 1.5 * iqr };
-  })() : null;
-  const today = new Date().toISOString().slice(0, 10);
-  const seenExact = new Set<string>();
-
-  return rows.map((r: any) => {
-    const code = text(r.code_site || r.code_station || r.code_piezo);
-    const d = dateText(r.date_observation);
-    const h = observationHour(r);
-    const value = number(r[cfg.value]);
-    const identity = \`${code}|\${d}|\${h}|\${value === null ? "" : value}\`;
-    const slot = \`${code}|\${d}|\${h}\`;
-    const exactRepeat = exactCounts.get(identity)! > 1 && seenExact.has(identity);
-    seenExact.add(identity);
-
-    // Missing time on limnimetry is not enough to reject a record. Multiple
-    // readings on the same day without time are retained and simply flagged.
-    const sameDayNoHour = module === "limnimetrie" && !h &&
-      rows.filter(x => text(x.code_site || x.code_station || x.code_piezo) === code && dateText(x.date_observation) === d).length > 1;
-    const sameSlotMultiple = sameObservationCounts.get(slot)! > 1;
-    const incomplete = !code || !validDate(d) || value === null;
-    const atypical = !!(bounds && value !== null && (value < bounds.lo || value > bounds.hi));
-    const future = validDate(d) && d > today;
-    const gpsBad = !gpsValid(r);
-
-    let status = "Validée";
-    if (exactRepeat) status = "Doublon";
-    else if (incomplete || future) status = "Rejetée";
-    else if (gpsBad || atypical || sameDayNoHour || (sameSlotMultiple && !exactRepeat)) status = "À vérifier";
-
-    // GPS quality affects cartographic placement, not the hydro measurement
-    // itself. A technically complete observation therefore remains analytic.
-    const usable = !incomplete && !future && !exactRepeat;
-
-    return {
-      ...r,
-      __status: status,
-      __duplicate: exactRepeat,
-      __usable: usable,
-      __atypical: atypical,
-      __future: future,
-      __gpsBad: gpsBad,
-      __fewDailyMeasurements: sameDayNoHour,
-    };
-  });
-}`;
+// Build the replacement as plain source lines so JavaScript does not interpolate
+// the template literals that belong to the generated TypeScript source.
+const newQuality = [
+  "function quality(rows: HydroRow[], module: Hydro) {",
+  "  const cfg = CFG[module];",
+  "  // Only an exact repeated observation is a duplicate.",
+  "  // Same station/date with different readings remains usable.",
+  "  const exactCounts = new Map<string, number>();",
+  "  const sameObservationCounts = new Map<string, number>();",
+  "  for (const r of rows) {",
+  "    const code = text(r.code_site || r.code_station || r.code_piezo);",
+  "    const d = dateText(r.date_observation);",
+  "    const h = observationHour(r);",
+  "    const value = number(r[cfg.value]);",
+  "    const identity = code + \"|\" + d + \"|\" + h + \"|\" + (value === null ? \"\" : value);",
+  "    const slot = code + \"|\" + d + \"|\" + h;",
+  "    exactCounts.set(identity, (exactCounts.get(identity) || 0) + 1);",
+  "    sameObservationCounts.set(slot, (sameObservationCounts.get(slot) || 0) + 1);",
+  "  }",
+  "",
+  "  const values = rows.map(r => number(r[cfg.value])).filter((x): x is number => x !== null).sort((a, b) => a - b);",
+  "  const quartile = (p: number) => values[Math.floor((values.length - 1) * p)];",
+  "  const bounds = values.length >= 4 ? (() => {",
+  "    const q1 = quartile(.25), q3 = quartile(.75), iqr = q3 - q1;",
+  "    return { lo: q1 - 1.5 * iqr, hi: q3 + 1.5 * iqr };",
+  "  })() : null;",
+  "  const today = new Date().toISOString().slice(0, 10);",
+  "  const seenExact = new Set<string>();",
+  "",
+  "  return rows.map((r: any) => {",
+  "    const code = text(r.code_site || r.code_station || r.code_piezo);",
+  "    const d = dateText(r.date_observation);",
+  "    const h = observationHour(r);",
+  "    const value = number(r[cfg.value]);",
+  "    const identity = code + \"|\" + d + \"|\" + h + \"|\" + (value === null ? \"\" : value);",
+  "    const slot = code + \"|\" + d + \"|\" + h;",
+  "    const exactRepeat = (exactCounts.get(identity) || 0) > 1 && seenExact.has(identity);",
+  "    seenExact.add(identity);",
+  "",
+  "    // Missing time on limnimetry is not a reason to reject the observation.",
+  "    const sameDayNoHour = module === \"limnimetrie\" && !h &&",
+  "      rows.filter(x => text(x.code_site || x.code_station || x.code_piezo) === code && dateText(x.date_observation) === d).length > 1;",
+  "    const sameSlotMultiple = (sameObservationCounts.get(slot) || 0) > 1;",
+  "    const incomplete = !code || !validDate(d) || value === null;",
+  "    const atypical = !!(bounds && value !== null && (value < bounds.lo || value > bounds.hi));",
+  "    const future = validDate(d) && d > today;",
+  "    const gpsBad = !gpsValid(r);",
+  "",
+  "    let status = \"Validée\";",
+  "    if (exactRepeat) status = \"Doublon\";",
+  "    else if (incomplete || future) status = \"Rejetée\";",
+  "    else if (gpsBad || atypical || sameDayNoHour || (sameSlotMultiple && !exactRepeat)) status = \"À vérifier\";",
+  "",
+  "    // GPS affects mapping only. A technically complete hydro observation stays analytic.",
+  "    const usable = !incomplete && !future && !exactRepeat;",
+  "",
+  "    return {",
+  "      ...r,",
+  "      __status: status,",
+  "      __duplicate: exactRepeat,",
+  "      __usable: usable,",
+  "      __atypical: atypical,",
+  "      __future: future,",
+  "      __gpsBad: gpsBad,",
+  "      __fewDailyMeasurements: sameDayNoHour,",
+  "    };",
+  "  });",
+  "}"
+].join("\n");
 
 const qualityPattern = /function quality\(rows: HydroRow\[\], module: Hydro\) \{.*?\n\}\n\nfunction qualitySummary/s;
 if (qualityPattern.test(route)) {
-  route = route.replace(qualityPattern, `${newQuality}\n\nfunction qualitySummary`);
+  route = route.replace(qualityPattern, newQuality + "\n\nfunction qualitySummary");
 }
 
 route = route.replaceAll('rows.filter(x => x.__status === "Validée")', 'rows.filter(x => x.__usable)');
@@ -123,10 +124,8 @@ if (!route.includes("const exactCounts") || !route.includes("__usable")) {
 }
 writeFileSync(routePath, route);
 
-if (panelPath) {
-  let panel = readFileSync(panelPath, "utf8");
-  panel = panel.replaceAll("Doublon certain", "Doublon exact");
-  writeFileSync(panelPath, panel);
-}
+let panel = readFileSync(panelPath, "utf8");
+panel = panel.replaceAll("Doublon certain", "Doublon exact");
+writeFileSync(panelPath, panel);
 
 console.log("PSORE V5: quality rules applied — exact duplicates only; technically usable À vérifier records retained for analytics.");
