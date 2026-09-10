@@ -13,7 +13,13 @@ export default function MiniBarChart({ title, data, unit = "" }: { title: string
           const pct = Math.max(4, Math.round(((Number(item.value) || 0) / max) * 100));
           return (
             <div className="mini-bar-row" key={item.label}>
-              <div className="mini-bar-label" title={item.label}>{item.label}</div>
+              <div
+                className="mini-bar-label"
+                title={item.label}
+                style={{ whiteSpace: "normal", overflow: "visible", textOverflow: "clip", overflowWrap: "anywhere", lineHeight: 1.2 }}
+              >
+                {item.label}
+              </div>
               <div className="mini-bar-track">
                 <div className="mini-bar-fill" style={{ width: `${pct}%`, background: item.color || undefined }} />
               </div>
