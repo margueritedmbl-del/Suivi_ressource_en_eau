@@ -37,6 +37,7 @@ export default function ReportsPanel() {
   const [msg, setMsg] = useState("");
   const isSubBasin = module === "sous_bassin";
   const isPointsEau = module === "points_eau";
+  const isHydro = HYDRO.has(module);
 
   const query = useMemo(() => {
     const p = new URLSearchParams({ module });
@@ -67,6 +68,7 @@ export default function ReportsPanel() {
     try {
       let endpoint: string;
       if (isPointsEau) endpoint = "/api/reports/export-points-eau-v5";
+      else if (scope === "analytic" && format === "pdf" && isHydro) endpoint = "/api/reports/export-v5-pdf-safe";
       else endpoint = scope === "analytic" ? "/api/reports/export-v5-decision" : "/api/reports/export-v5";
       const suffix = !isSubBasin ? `&scope=${scope}` : "";
       const r = await authFetch(`${endpoint}?${query}&format=${format}${suffix}`);
@@ -111,7 +113,7 @@ export default function ReportsPanel() {
 
       <div style={{ marginTop: 18 }}>
         <h3 style={{ marginBottom: 8 }}>Export analytique — aide à la décision</h3>
-        <p className="muted" style={{ marginTop: 0 }}>Aucun détail interne de validation, doublon ou contrôle qualité n’est affiché. Le PDF reprend les indicateurs pertinents, au maximum 2–3 graphiques, la carte du territoire filtré, une synthèse « À retenir pour la décision » et un tableau détaillé.</p>
+        <p className="muted" style={{ marginTop: 0 }}>Aucun détail interne de validation, doublon ou contrôle qualité n’est affiché. Le PDF reprend les indicateurs pertinents, la carte du territoire filtré, une synthèse « À retenir pour la décision » et un tableau détaillé.</p>
         <div className="report-grid">{analyticFormats.map(format => <button key={`a-${format}`} className="btn btn-primary" disabled={!canAccessReports || !!busy} onClick={() => download(format, "analytic")}>{busy === `analytic-${format}` ? "Génération..." : `Exporter ${format.toUpperCase()}`}</button>)}</div>
       </div>
 
