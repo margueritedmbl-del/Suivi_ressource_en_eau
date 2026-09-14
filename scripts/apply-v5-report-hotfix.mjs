@@ -29,7 +29,7 @@ patchFile('app/api/reports/export-v5-pro/route.ts', [
   ['import {Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,ShadingType} from "docx";', 'import {Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType,ShadingType,PageOrientation} from "docx";', 'DOCX landscape page orientation import'],
   ['new Document({sections:[{children}]})', 'new Document({sections:[{properties:{page:{size:{orientation:PageOrientation.LANDSCAPE},margin:{top:568,right:568,bottom:568,left:568}}},children}]})', 'DOCX landscape layout'],
   ['if(!pts.length){p.setFontSize(5);p.text("Aucune station géolocalisée",x+4,y+10);return}let minLon=', 'if(!pts.length){p.setFontSize(5);p.text("Aucune station géolocalisée",x+4,y+10);return}p.saveGraphicsState();p.rect(x,y,w,h);p.clip();p.discardPath();let minLon=', 'hydro PDF map clipping start'],
-  ['p.text(label.slice(0,22),xx+1.6,yy+(i%2?2:-1))}p.setFont("helvetica","normal")', 'p.text(label.slice(0,22),xx+1.6,yy+(i%2?2:-1))}p.restoreGraphicsState();p.setFont("helvetica","normal")', 'hydro PDF map clipping end'],
+  ['p.text(s.code,xx+1.8,yy-1)}p.setFont("helvetica","normal")', 'p.text(s.code,xx+1.8,yy-1)}p.restoreGraphicsState();p.setFont("helvetica","normal")', 'hydro PDF map clipping end'],
 ]);
 
 const pointMapWithBoundaries = 'features=communeFeatures(communes.length?communes:[...new Set(rows.map(r=>t(r.commune)).filter(Boolean))]),coords:number[][]=[];for(const f of features)for(const ring of rings(f.geometry))for(const q of ring)if(Array.isArray(q)&&q.length>=2)coords.push(q);';
