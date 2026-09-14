@@ -27,3 +27,8 @@ patchFile('app/api/reports/export-v5-pro/route.ts', [
   ['fill:s.tendance.color.replace("#","")+"22"', 'fill:s.tendance.label.includes("Remontée")?"EAF7F0":s.tendance.label.includes("Baisse")?"FCECEC":"EAF4FA"', 'DOCX 6-digit trend shading'],
   [oldPiezoSummary, newPiezoSummary, 'weighted piezometric decision indicators'],
 ]);
+
+const pointMapWithBoundaries = 'features=communeFeatures(communes.length?communes:[...new Set(rows.map(r=>t(r.commune)).filter(Boolean))]),coords:number[][]=[];for(const f of features)for(const ring of rings(f.geometry))for(const q of ring)if(Array.isArray(q)&&q.length>=2)coords.push(q);';
+patchFile('app/api/reports/export-points-eau-v5/route.ts', [
+  [pointMapWithBoundaries, 'features=[] as any[],coords:number[][]=[];', 'point-water PDF map without distorted commune boundaries'],
+]);
