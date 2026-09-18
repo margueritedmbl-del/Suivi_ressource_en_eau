@@ -46,8 +46,10 @@ function applyFilters(rows: any[], req: NextRequest) {
   let out = rows;
   if (commune && commune !== "all") out = out.filter((r) => t(r.commune) === commune);
   if (siteFilter && siteFilter !== "all") out = out.filter((r) => site(r) === siteFilter);
-  if (start) out = out.filter((r) => d(r.date_observation || r.created_at || r.date_collecte) >= start);
-  if (end) out = out.filter((r) => d(r.date_observation || r.created_at || r.date_collecte) <= end);
+  if (module !== "points_eau") {
+    if (start) out = out.filter((r) => d(r.date_observation || r.created_at || r.date_collecte) >= start);
+    if (end) out = out.filter((r) => d(r.date_observation || r.created_at || r.date_collecte) <= end);
+  }
   if (alerte === "yes") out = out.filter(alert);
   if (alerte === "no") out = out.filter((r) => !alert(r));
   if (type && type !== "all") out = out.filter((r) => t(r.type_infrastructure || r.type_ouvrage) === type);
