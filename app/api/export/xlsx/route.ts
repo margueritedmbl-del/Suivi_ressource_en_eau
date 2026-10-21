@@ -35,7 +35,7 @@ async function readRows(module: string) {
   if (module === "points_eau") return localPoints();
   return [];
 }
-function applyFilters(rows: any[], req: NextRequest) {
+function applyFilters(rows: any[], req: NextRequest, module: string) {
   const q = req.nextUrl.searchParams;
   const commune = q.get("commune");
   const siteFilter = q.get("site");
@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
   if (auth.response) return auth.response;
   const module = req.nextUrl.searchParams.get("module") || "pluviometrie";
   if (!TABLES[module]) return NextResponse.json({ ok: false, error: "Module invalide" }, { status: 400 });
-  const rows = sanitize(applyFilters(await readRows(module), req));
+  const rows = sanitize(applyFilters(await readRows(module), req, module));
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.json_to_sheet(rows);
   XLSX.utils.book_append_sheet(wb, ws, module.slice(0, 31));

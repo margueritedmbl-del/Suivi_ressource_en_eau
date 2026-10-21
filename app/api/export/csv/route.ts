@@ -35,7 +35,7 @@ async function readRows(module: string) {
   if (module === "points_eau") return localPoints();
   return [];
 }
-function applyFilters(rows: any[], req: NextRequest) {
+function applyFilters(rows: any[], req: NextRequest, module: string) {
   const q = req.nextUrl.searchParams;
   const commune = q.get("commune");
   const siteFilter = q.get("site");
@@ -60,6 +60,6 @@ export async function GET(req: NextRequest) {
   if (auth.response) return auth.response;
   const module = req.nextUrl.searchParams.get("module") || "pluviometrie";
   if (!TABLES[module]) return NextResponse.json({ ok: false, error: "Module invalide" }, { status: 400 });
-  const rows = sanitize(applyFilters(await readRows(module), req));
+  const rows = sanitize(applyFilters(await readRows(module), req, module));
   return new NextResponse(toCsv(rows), { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="${module}_PSORE_V2_4.csv"` } });
 }
