@@ -14,6 +14,7 @@ ENV NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
 ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
 ENV NEXT_TELEMETRY_DISABLED=1
 
+RUN node -e "const u=process.env.NEXT_PUBLIC_SUPABASE_URL||''; const k=process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY||''; if(!u||!k){console.error('PSORE build: variables Supabase publiques absentes'); process.exit(1)}; try{const x=new URL(u); console.log('PSORE build: Supabase public config OK host='+x.host+' keyPrefix='+k.slice(0,6))}catch(e){console.error('PSORE build: NEXT_PUBLIC_SUPABASE_URL invalide'); process.exit(1)}"
 RUN npm run build
 
 FROM node:22-alpine AS runner
