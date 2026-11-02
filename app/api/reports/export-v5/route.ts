@@ -62,41 +62,65 @@ const observationHour = (r: any) => {
 
 function quality(rows: HydroRow[], module: Hydro) {
   const cfg = CFG[module];
-  const counts = new Map<string, number>();
+  // Only an exact repeated observation is a duplicate.
+  // Same station/date with different readings remains usable.
+  const exactCounts = new Map<string, number>();
+  const sameObservationCounts = new Map<string, number>();
   for (const r of rows) {
     const code = text(r.code_site || r.code_station || r.code_piezo);
     const d = dateText(r.date_observation);
     const h = observationHour(r);
-    // Limnimetry may have two daily readings. Without an hour, do not silently call
-    // the two observations duplicates; flag the day for review instead.
-    const key = `${code}|${d}|${h}`;
-    if (module !== "limnimetrie" || h) counts.set(key, (counts.get(key) || 0) + 1);
+    const value = number(r[cfg.value]);
+    const identity = code + "|" + d + "|" + h + "|" + (value === null ? "" : value);
+    const slot = code + "|" + d + "|" + h;
+    exactCounts.set(identity, (exactCounts.get(identity) || 0) + 1);
+    sameObservationCounts.set(slot, (sameObservationCounts.get(slot) || 0) + 1);
   }
+
   const values = rows.map(r => number(r[cfg.value])).filter((x): x is number => x !== null).sort((a, b) => a - b);
   const quartile = (p: number) => values[Math.floor((values.length - 1) * p)];
-  const bounds = values.length >= 4 ? (() => { const q1 = quartile(.25), q3 = quartile(.75), iqr = q3 - q1; return { lo: q1 - 1.5 * iqr, hi: q3 + 1.5 * iqr }; })() : null;
+  const bounds = values.length >= 4 ? (() => {
+    const q1 = quartile(.25), q3 = quartile(.75), iqr = q3 - q1;
+    return { lo: q1 - 1.5 * iqr, hi: q3 + 1.5 * iqr };
+  })() : null;
   const today = new Date().toISOString().slice(0, 10);
+  const seenExact = new Set<string>();
+
   return rows.map((r: any) => {
     const code = text(r.code_site || r.code_station || r.code_piezo);
     const d = dateText(r.date_observation);
     const h = observationHour(r);
     const value = number(r[cfg.value]);
-    const sameDayNoHour = module === "limnimetrie" && !h && rows.filter(x => text(x.code_site || x.code_station || x.code_piezo) === code && dateText(x.date_observation) === d).length > 1;
-    const duplicate = module === "limnimetrie" ? (!!h && (counts.get(`${code}|${d}|${h}`) || 0) > 1) : (counts.get(`${code}|${d}|${h}`) || 0) > 1;
+    const identity = code + "|" + d + "|" + h + "|" + (value === null ? "" : value);
+    const slot = code + "|" + d + "|" + h;
+    const exactRepeat = (exactCounts.get(identity) || 0) > 1 && seenExact.has(identity);
+    seenExact.add(identity);
+
+    // Missing time on limnimetry is not a reason to reject the observation.
+    const sameDayNoHour = module === "limnimetrie" && !h &&
+      rows.filter(x => text(x.code_site || x.code_station || x.code_piezo) === code && dateText(x.date_observation) === d).length > 1;
+    const sameSlotMultiple = (sameObservationCounts.get(slot) || 0) > 1;
     const incomplete = !code || !validDate(d) || value === null;
     const atypical = !!(bounds && value !== null && (value < bounds.lo || value > bounds.hi));
-    const future = d > today;
+    const future = validDate(d) && d > today;
+    const gpsBad = !gpsValid(r);
+
     let status = "Validée";
-    if (duplicate) status = "Doublon certain";
-    else if (incomplete || !gpsValid(r) || future) status = "Rejetée";
-    else if (atypical || sameDayNoHour) status = "À vérifier";
+    if (exactRepeat) status = "Doublon";
+    else if (incomplete || future) status = "Rejetée";
+    else if (gpsBad || atypical || sameDayNoHour || (sameSlotMultiple && !exactRepeat)) status = "À vérifier";
+
+    // GPS affects mapping only. A technically complete hydro observation stays analytic.
+    const usable = !incomplete && !future && !exactRepeat;
+
     return {
       ...r,
       __status: status,
-      __duplicate: duplicate,
+      __duplicate: exactRepeat,
+      __usable: usable,
       __atypical: atypical,
       __future: future,
-      __gpsBad: !gpsValid(r),
+      __gpsBad: gpsBad,
       __fewDailyMeasurements: sameDayNoHour,
     };
   });
@@ -106,7 +130,7 @@ function qualitySummary(rows: any[], loaderRejected = 0) {
   return {
     total: rows.length + loaderRejected,
     loaded: rows.length,
-    valid: rows.filter(r => r.__status === "Validée").length,
+    valid: rows.filter(r => r.__usable).length,
     verify: rows.filter(r => r.__status === "À vérifier").length,
     rejected: rows.filter(r => r.__status === "Rejetée").length + loaderRejected,
     duplicates: rows.filter(r => r.__duplicate).length,
@@ -125,7 +149,7 @@ function weighted(items: { value: number; weight: number }[]) {
 
 function piezometry(rows: any[]) {
   const byStation = new Map<string, any[]>();
-  for (const r of rows.filter(x => x.__status === "Validée")) {
+  for (const r of rows.filter(x => x.__usable)) {
     const code = text(r.code_site || r.code_station || r.code_piezo);
     const a = byStation.get(code) || [];
     a.push(r);
@@ -177,7 +201,7 @@ function piezometry(rows: any[]) {
 }
 
 function rainfall(rows: any[]) {
-  const valid = rows.filter(r => r.__status === "Validée");
+  const valid = rows.filter(r => r.__usable);
   const values = valid.map(r => number(r.pluie_24h_mm)).filter((x): x is number => x !== null);
   const monthlyMap = new Map<string, number>();
   for (const r of valid) {
@@ -196,7 +220,7 @@ function rainfall(rows: any[]) {
 
 function limnimetry(rows: any[]) {
   const by = new Map<string, any>();
-  for (const r of rows.filter(x => x.__status === "Validée")) {
+  for (const r of rows.filter(x => x.__usable)) {
     const code = stationCode("limnimetrie", r);
     const z = by.get(code) || { code, coursEau: text(r.cours_eau || r.nom_cours_eau || r.nom_site || r.localite) || "Cours d’eau non renseigné", commune: text(r.commune), values: [] as number[] };
     const v = number(r.hauteur_eau);
@@ -218,7 +242,8 @@ function detailRows(rows: any[], module: Hydro) {
     Valeur: number(r[CFG[module].value]),
     Unité: CFG[module].unit,
     "Statut qualité": r.__status,
-    "Doublon certain": r.__duplicate ? "Oui" : "Non",
+    "Doublon exact": r.__duplicate ? "Oui" : "Non",
+    "Utilisable pour analyse": r.__usable ? "Oui" : "Non",
     "Valeur atypique": r.__atypical ? "Oui" : "Non",
     "GPS valide": r.__gpsBad ? "Non" : "Oui",
     ...(module === "limnimetrie" ? { "Cours d’eau": text(r.cours_eau || r.nom_cours_eau || r.nom_site || r.localite) } : {}),
@@ -261,7 +286,7 @@ function chart(p: jsPDF, title: string, items: { label: string; value: number }[
     ink(p, COLORS.gray); p.setFontSize(4); p.text(formatNumber(max * i / 4, 1), xx + 1, gy + 1);
   }
   ink(p, COLORS.gray); p.setFontSize(4.5); p.text(text(xLabel), xx + ww / 2 - 10, bottom + 8); p.text(text(yLabel), xx, yy + 6);
-  if (!clean.length) { p.text("Aucune donnée validée", xx + 25, yy + 18); return; }
+  if (!clean.length) { p.text("Aucune donnée utilisable", xx + 25, yy + 18); return; }
   const step = (ww - 20) / clean.length;
   clean.forEach((it, i) => {
     const bar = Math.abs(it.value) / max * (hh - 20);
@@ -276,7 +301,7 @@ function qualityBlock(p: jsPDF, q: any, x: number, y: number) {
   ink(p, COLORS.gray); p.setFont("helvetica", "normal"); p.setFontSize(5.5);
   p.text(`Reçues : ${q.total} · Validées : ${q.valid} · À vérifier : ${q.verify} · Rejetées : ${q.rejected} · Doublons : ${q.duplicates}`, xx, yy + 7);
   p.text(`Atypiques : ${q.atypical} · GPS invalides/absents : ${q.gps} · Dates futures : ${q.future} · Heure limni à vérifier : ${q.missingHourReview}`, xx, yy + 14);
-  p.text("Les anomalies restent conservées dans la source ; seules les données validées alimentent les indicateurs.", xx, yy + 21);
+  p.text("Les anomalies restent conservées dans la source ; toutes les données techniquement utilisables alimentent les indicateurs ; les doublons exacts et données structurellement invalides sont exclus.", xx, yy + 21);
 }
 function footer(p: jsPDF) {
   const pages = p.getNumberOfPages();
@@ -453,7 +478,7 @@ function makeHydroDocx(module: Hydro, rows: any[], q: any, start: string, end: s
   const children: Paragraph[] = [
     new Paragraph({ text: `PSORE — ${CFG[module].label}`, heading: HeadingLevel.TITLE }),
     new Paragraph(`Période : ${period}`),
-    new Paragraph(`Contrôle qualité : ${q.valid} validées · ${q.verify} à vérifier · ${q.rejected + rejected} rejetées · ${q.duplicates} doublons certains.`),
+    new Paragraph(`Contrôle qualité : ${q.valid} validées · ${q.verify} à vérifier · ${q.rejected + rejected} rejetées · ${q.duplicates} doublons exacts.`),
   ];
   if (pz) {
     children.push(new Paragraph(`Remontée moyenne du niveau statique : ${formatSigned(pz.deltaGlobal)} m (${formatSigned(pz.rateGlobal, 1)} %).`));
@@ -470,7 +495,7 @@ function makeHydroDocx(module: Hydro, rows: any[], q: any, start: string, end: s
     for (const x of lm) children.push(new Paragraph(`• ${x.code} — cours d’eau : ${x.coursEau} — niveau moyen ${formatNumber(x.moyenne)} cm (${x.mesures} mesures). La mesure caractérise le niveau au droit de la station.`));
   }
   children.push(new Paragraph({ text: "Source et qualité", heading: HeadingLevel.HEADING_1 }));
-  children.push(new Paragraph("Les données source sont conservées avec leur statut qualité. Les indicateurs validés excluent les doublons certains, les données rejetées et les incohérences certaines."));
+  children.push(new Paragraph("Les données source sont conservées avec leur statut qualité. Les indicateurs validés excluent les doublons exacts, les données rejetées et les incohérences certaines."));
   return Packer.toBuffer(new Document({ sections: [{ children }] }));
 }
 
