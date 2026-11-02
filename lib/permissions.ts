@@ -29,7 +29,7 @@ export function canAccessObservatoire(role?:string){return has(DECISION,role);}
 export function canAccessReports(role?:string){return has(DECISION,role);}
 export function canAccessSigDecisionnel(role?:string){return has(DECISION,role);}
 export function canAccessPrivateMap(role?:string){return has(CONNECTED,role);}
-export function canExportCsvXlsx(role?:string){return has(DECISION,role);}
+export function canExportCsvXlsx(role?:string){return has(CONNECTED,role);}
 export function canExportAdvanced(role?:string){return has(DECISION,role);}
 export function canSync(role?:string){return has(ADMIN,role);}
 export function canManageUsers(role?:string){return has(ADMIN,role);}

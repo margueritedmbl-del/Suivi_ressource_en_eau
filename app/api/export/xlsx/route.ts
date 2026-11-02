@@ -5,10 +5,10 @@ export const runtime = "nodejs";
 
 import { NextRequest, NextResponse } from "next/server";
 import * as XLSX from "xlsx";
-import pointsEauInventaire from "@/public/data/points-eau-inventaire.json";
+import { readPointEauRows, cleanRowsForPublic } from "@/services/points-eau/analytics";
 import { supabaseAdmin, hasSupabaseAdminEnv } from "@/lib/supabase-admin";
 import { requireApiRole } from "@/lib/auth-server";
-import { ROLE_DNH, ROLE_ADMIN, ROLE_SUPER_ADMIN } from "@/lib/permissions";
+import { ROLE_DNH, ROLE_ADMIN, ROLE_SUPER_ADMIN, ROLE_OBSERVATEUR, ROLE_COLLECTEUR } from "@/lib/permissions";
 import { loadHydroRows } from "@/lib/hydro-data";
 
 const TABLES: Record<string, string[]> = {
@@ -23,8 +23,9 @@ function t(v: any) { return String(v ?? "").trim(); }
 function d(v: any) { return t(v).slice(0, 10); }
 function site(r: any) { return t(r.code_site || r.code_station || r.code_piezo || r.code_pe || r.station_id || r.piezometre_id); }
 function alert(r: any) { return Boolean(r.alerte_valeur || r.alerte_gps || r.alerte_donnee || r.alerte_secheresse || r.alerte_crue || r.alerte_qualite_eau); }
-async function localPoints() { return pointsEauInventaire as any[]; }
+
 async function readRows(module: string) {
+  if (module === "points_eau") return cleanRowsForPublic((await readPointEauRows()).rows);
   if (["pluviometrie","piezometrie","limnimetrie"].includes(module)) return (await loadHydroRows(module as any)).rows;
   if (hasSupabaseAdminEnv()) {
     for (const table of TABLES[module] || []) {
@@ -32,18 +33,20 @@ async function readRows(module: string) {
       if (!error && data?.length) return data;
     }
   }
-  if (module === "points_eau") return localPoints();
+
   return [];
 }
 function applyFilters(rows: any[], req: NextRequest, module: string) {
   const q = req.nextUrl.searchParams;
   const commune = q.get("commune");
+  const communes = (q.get("communes") || "").split(",").map(t).filter(Boolean);
   const siteFilter = q.get("site");
   const start = q.get("start");
   const end = q.get("end");
   const alerte = q.get("alerte");
   const type = q.get("type");
   let out = rows;
+  if (communes.length) out = out.filter(r => communes.includes(t(r.commune)));
   if (commune && commune !== "all") out = out.filter((r) => t(r.commune) === commune);
   if (siteFilter && siteFilter !== "all") out = out.filter((r) => site(r) === siteFilter);
   if (module !== "points_eau") {
@@ -56,7 +59,7 @@ function applyFilters(rows: any[], req: NextRequest, module: string) {
   return out;
 }
 export async function GET(req: NextRequest) {
-  const auth = await requireApiRole(req, [ROLE_DNH, ROLE_ADMIN, ROLE_SUPER_ADMIN]);
+  const auth = await requireApiRole(req, [ROLE_DNH, ROLE_ADMIN, ROLE_SUPER_ADMIN, ROLE_OBSERVATEUR, ROLE_COLLECTEUR]);
   if (auth.response) return auth.response;
   const module = req.nextUrl.searchParams.get("module") || "pluviometrie";
   if (!TABLES[module]) return NextResponse.json({ ok: false, error: "Module invalide" }, { status: 400 });

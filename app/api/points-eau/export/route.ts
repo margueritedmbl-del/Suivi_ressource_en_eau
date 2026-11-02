@@ -8,7 +8,12 @@ import * as XLSX from "xlsx";
 import { applyPointEauFilters, cleanRowsForPublic, readPointEauRows } from "@/services/points-eau/analytics";
 import { toCsv } from "@/services/exports/csv";
 
+import { requireApiRole } from "@/lib/auth-server";
+import { ROLE_DNH, ROLE_ADMIN, ROLE_SUPER_ADMIN } from "@/lib/permissions";
+
 export async function GET(req: NextRequest) {
+  const auth = await requireApiRole(req, [ROLE_DNH, ROLE_ADMIN, ROLE_SUPER_ADMIN]);
+  if (auth.response) return auth.response;
   const format = req.nextUrl.searchParams.get("format") || "csv";
   const { rows } = await readPointEauRows();
   const filtered = cleanRowsForPublic(applyPointEauFilters(rows, req.nextUrl.searchParams));
