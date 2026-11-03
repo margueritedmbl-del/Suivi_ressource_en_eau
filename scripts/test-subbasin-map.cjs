@@ -1,0 +1,25 @@
+const fs=require('fs'),ts=require('typescript'),assert=require('assert/strict');
+const file='app/api/reports/export-v5-decision/route.ts';
+const source=fs.readFileSync(file,'utf8')+'\nexports.__test={subPdf,decisionMap};';
+const code=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText;
+const mod={exports:{}};const mocks={'@/lib/auth-server':{},'@/lib/permissions':{},'@/lib/hydro-data':{},'@/lib/network-registry':{stationMetaByCode:()=>null,displayStationCode:(_m,c)=>c}};
+new Function('require','module','exports',code)(n=>n in mocks?mocks[n]:require(n),mod,mod.exports);
+const {jsPDF}=require('jspdf');
+const fc=JSON.parse(fs.readFileSync('public/data/decisionnel/sous_bassins.geojson'));
+const feature=fc.features.find(f=>Object.values(f.properties).some(v=>String(v)==='102'));assert(feature);
+(async()=>{
+ const p=new jsPDF({orientation:'landscape'}),images=[];let depth=0;
+ const save=p.saveGraphicsState.bind(p),restore=p.restoreGraphicsState.bind(p),add=p.addImage.bind(p);
+ p.saveGraphicsState=(...a)=>{depth++;return save(...a)};p.restoreGraphicsState=(...a)=>{depth--;return restore(...a)};
+ p.addImage=(...a)=>{assert(depth>0,'Tiles must be clipped');images.push(a);return add(...a)};
+ const tile=Buffer.from('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','base64');
+ global.fetch=async()=>new Response(tile,{headers:{'Content-Type':'image/png'}});
+ const rows=[{__module:'piezometrie',code_piezo:'PZ-test',longitude:-7.5,latitude:13},{__module:'pluviometrie',code_station:'PL-test',longitude:-7.4,latitude:13}];
+ await mod.exports.__test.decisionMap(p,rows,'piezometrie',[],'osm',151,142,134,53,1,feature);
+ assert(images.length);for(const a of images)assert(Math.abs(a[4]-a[5])<1e-8,'Square tiles must remain square');assert.equal(depth,0);
+ const out=p.output();assert(!out.includes('Couverture'));assert(out.includes('Stations :'));
+ fs.mkdirSync('tmp/pdfs',{recursive:true});fs.writeFileSync('tmp/pdfs/subbasin-map-test.pdf',Buffer.from(p.output('arraybuffer')));
+ const x={id:'102',feature,territory:'Sous-bassin SB-102',basinHa:100000,restoredHa:2900,density:2.9,sites:344,pz:{evolution:.28,taux:3.9,tendance:{label:'Situation stable'},communes:[{commune:'Koula',evolution:.28}]},pl:{average:120,total:240,rainyDays:5},lm:{moyenne:126},technologies:[{technology:'Cordons pierreux',area:2000}],modules:Object.fromEntries(['piezometrie','pluviometrie','limnimetrie'].map(m=>[m,rows.filter(r=>r.__module===m)]))};
+ fs.writeFileSync('tmp/pdfs/subbasin-report-test.pdf',Buffer.from(await mod.exports.__test.subPdf(x,'2026-08-08','2026-11-03',new URLSearchParams())));
+ console.log('OK: SB-102, square tiles, clipping, balanced graphics state, three-network legend. Synthetic observations and tiles.');
+})().catch(e=>{console.error(e);process.exitCode=1});
