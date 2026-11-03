@@ -2,12 +2,15 @@
   "version": "4.0.0",
   "epsg": 32629,
   "forages_exploitation": {
-    "total": 16,
+    "total": 34,
     "crr": 8,
-    "pm": 8,
-    "debit_nominal_total_m3h": 166.7,
-    "modules_pv": 162,
-    "puissance_installee_totale_kwc": 89.14
+    "pm": 25,
+    "debit_nominal_total_m3h": 194.1,
+    "modules_pv": 518,
+    "puissance_installee_totale_kwc": 178.14,
+    "ep": 1,
+    "debits_exploitation_renseignes": 21,
+    "debits_exploitation_non_renseignes": 13
   },
   "piezometres": {
     "total": 20,
@@ -25,6 +28,18 @@
   "notes": [
     "Nadiobougou: le second forage retenu est F2.",
     "CIP = cote d’installation de la pompe.",
-    "Coordonnées: WGS 84 / UTM 29N (EPSG:32629)."
-  ]
+    "Coordonnées: WGS 84 / UTM 29N (EPSG:32629).",
+    "Débits d’essai et volumes prélevés restent distincts.",
+    "18 forages supplémentaires sans position individuelle; coordonnées du site AGR disponibles séparément.",
+    "Puissance photovoltaïque théorique calculée depuis les modules; divergences source signalées."
+  ],
+  "agr": {
+    "total": 16,
+    "types": {
+      "PM": 13,
+      "EP": 1,
+      "BIA": 1,
+      "UAB": 1
+    }
+  }
 }

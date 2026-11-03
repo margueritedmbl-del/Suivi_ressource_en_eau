@@ -22,7 +22,9 @@
     ],
     "source_id": 1,
     "type_source": "PM",
-    "forages_reference": [],
+    "forages_reference": [
+      "PM-SRK-NGABAKORO-F1"
+    ],
     "deja_reference": false,
     "surface_ha_source": 1,
     "equipement_interne": "Magasin de stockage, PM cloturé en Grillage",
@@ -37,7 +39,13 @@
     "donnees_techniques_a_confirmer": {
       "capacite_m3": 20,
       "nombre_forages": 2
-    }
+    },
+    "surface_ha": 1,
+    "capacite_stockage_m3_source_gps": 20,
+    "nombre_forages_documentes": 1,
+    "points_a_verifier": [
+      "Nombre de forages : 2 dans le fichier GPS; 1 documentés."
+    ]
   },
   {
     "code": "AGR-SRK-04",
@@ -62,7 +70,10 @@
     ],
     "source_id": 2,
     "type_source": "PM",
-    "forages_reference": [],
+    "forages_reference": [
+      "PM-SRK-DOGONI-F1",
+      "PM-SRK-DOGONI-F3"
+    ],
     "deja_reference": false,
     "surface_ha_source": 1,
     "equipement_interne": "Magasin de stockage, PM cloturé en Grillage",
@@ -77,7 +88,10 @@
     "donnees_techniques_a_confirmer": {
       "capacite_m3": 20,
       "nombre_forages": 2
-    }
+    },
+    "surface_ha": 1,
+    "capacite_stockage_m3_source_gps": 20,
+    "nombre_forages_documentes": 2
   },
   {
     "code": "AGR-SRK-03",
@@ -102,7 +116,10 @@
     ],
     "source_id": 3,
     "type_source": "PM",
-    "forages_reference": [],
+    "forages_reference": [
+      "PM-SRK-MPIEBOUGOU-F1",
+      "PM-SRK-MPIEBOUGOU-F2"
+    ],
     "deja_reference": false,
     "surface_ha_source": 1,
     "equipement_interne": "Magasin de stockage, PM cloturé en Grillage",
@@ -117,7 +134,10 @@
     "donnees_techniques_a_confirmer": {
       "capacite_m3": 20,
       "nombre_forages": 2
-    }
+    },
+    "surface_ha": 1,
+    "capacite_stockage_m3_source_gps": 20,
+    "nombre_forages_documentes": 2
   },
   {
     "code": "AGR-KLA-07",
@@ -142,7 +162,10 @@
     ],
     "source_id": 4,
     "type_source": "PM",
-    "forages_reference": [],
+    "forages_reference": [
+      "PM-KLA-FASSOUMBOUGOU-F1",
+      "PM-KLA-FASSOUMBOUGOU-F2"
+    ],
     "deja_reference": false,
     "surface_ha_source": 1,
     "equipement_interne": "Magasin de stockage, PM cloturé en Grillage",
@@ -157,7 +180,10 @@
     "donnees_techniques_a_confirmer": {
       "capacite_m3": 20,
       "nombre_forages": 2
-    }
+    },
+    "surface_ha": 1,
+    "capacite_stockage_m3_source_gps": 20,
+    "nombre_forages_documentes": 2
   },
   {
     "code": "AGR-KLA-06",
@@ -182,7 +208,10 @@
     ],
     "source_id": 5,
     "type_source": "PM",
-    "forages_reference": [],
+    "forages_reference": [
+      "PM-KLA-TAMANIBASSALA-F1",
+      "PM-KLA-TAMANIBASSALA-F2"
+    ],
     "deja_reference": false,
     "surface_ha_source": 1,
     "equipement_interne": "Magasin de stockage, PM cloturé en Grillage",
@@ -197,7 +226,10 @@
     "donnees_techniques_a_confirmer": {
       "capacite_m3": 20,
       "nombre_forages": 2
-    }
+    },
+    "surface_ha": 1,
+    "capacite_stockage_m3_source_gps": 20,
+    "nombre_forages_documentes": 2
   },
   {
     "code": "AGR-MGT-08",
@@ -222,7 +254,10 @@
     ],
     "source_id": 6,
     "type_source": "PM",
-    "forages_reference": [],
+    "forages_reference": [
+      "PM-MGT-FEYA-F2",
+      "PM-MGT-FEYA-F3"
+    ],
     "deja_reference": false,
     "surface_ha_source": 1,
     "equipement_interne": "Magasin de stockage, PM cloturé en Grillage",
@@ -237,7 +272,10 @@
     "donnees_techniques_a_confirmer": {
       "capacite_m3": 20,
       "nombre_forages": 2
-    }
+    },
+    "surface_ha": 1,
+    "capacite_stockage_m3_source_gps": 20,
+    "nombre_forages_documentes": 2
   },
   {
     "code": "AGR-MGT-09",
@@ -262,7 +300,10 @@
     ],
     "source_id": 7,
     "type_source": "PM",
-    "forages_reference": [],
+    "forages_reference": [
+      "PM-MGT-DOGONI-F1",
+      "PM-MGT-DOGONI-F3"
+    ],
     "deja_reference": false,
     "surface_ha_source": 1,
     "equipement_interne": "Magasin de stockage, PM cloturé en Grillage",
@@ -277,13 +318,16 @@
     "donnees_techniques_a_confirmer": {
       "capacite_m3": 20,
       "nombre_forages": 2
-    }
+    },
+    "surface_ha": 1,
+    "capacite_stockage_m3_source_gps": 20,
+    "nombre_forages_documentes": 2
   },
   {
     "code": "AGR-MGT-10",
     "commune": "Méguétan",
     "site": "Tanabougou",
-    "type": "Pisciculture",
+    "type": "EP",
     "lot": 3,
     "taux_execution_pct": 100,
     "latitude": 12.9478895179,
@@ -302,7 +346,9 @@
     ],
     "source_id": 8,
     "type_source": "Pisciculture",
-    "forages_reference": [],
+    "forages_reference": [
+      "EP-MGT-TANABOUGOU-F1"
+    ],
     "deja_reference": false,
     "surface_ha_source": 0.25,
     "equipement_interne": null,
@@ -317,13 +363,21 @@
     "donnees_techniques_a_confirmer": {
       "capacite_m3": 20,
       "nombre_forages": 2
-    }
+    },
+    "surface_ha": 0.25,
+    "capacite_stockage_m3_source_gps": 20,
+    "capacite_stockage_m3_rapport": 10,
+    "points_a_verifier": [
+      "Stockage : fichier GPS 20 m³; légende photographique du rapport p.456 : 10 m³.",
+      "Nombre de forages : 2 dans le fichier GPS; 1 documentés."
+    ],
+    "nombre_forages_documentes": 1
   },
   {
     "code": "AGR-DMB-12",
     "commune": "Doumba",
     "site": "Kossaba",
-    "type": "Boutique d’intrants",
+    "type": "BIA",
     "lot": 4,
     "taux_execution_pct": 100,
     "latitude": 13.1440813018,
@@ -357,13 +411,16 @@
     "donnees_techniques_a_confirmer": {
       "capacite_m3": 20,
       "nombre_forages": 2
-    }
+    },
+    "surface_ha": null,
+    "capacite_stockage_m3_source_gps": null,
+    "nombre_forages_documentes": 0
   },
   {
     "code": "AGR-DMB-11",
     "commune": "Doumba",
     "site": "Dibaro",
-    "type": "Unité d’aliment bétail",
+    "type": "UAB",
     "lot": 4,
     "taux_execution_pct": 100,
     "latitude": 13.0639850008,
@@ -397,7 +454,10 @@
     "donnees_techniques_a_confirmer": {
       "capacite_m3": 20,
       "nombre_forages": 2
-    }
+    },
+    "surface_ha": null,
+    "capacite_stockage_m3_source_gps": null,
+    "nombre_forages_documentes": 0
   },
   {
     "code": "AGR-KLA-05",
@@ -422,7 +482,10 @@
     ],
     "source_id": 11,
     "type_source": "PM",
-    "forages_reference": [],
+    "forages_reference": [
+      "PM-KLA-DIENI-F1",
+      "PM-KLA-DIENI-F3"
+    ],
     "deja_reference": false,
     "surface_ha_source": 1,
     "equipement_interne": "Magasin de stockage, PM cloturé en Grillage",
@@ -437,7 +500,10 @@
     "donnees_techniques_a_confirmer": {
       "capacite_m3": 20,
       "nombre_forages": 2
-    }
+    },
+    "surface_ha": 1,
+    "capacite_stockage_m3_source_gps": 20,
+    "nombre_forages_documentes": 2
   },
   {
     "code": "AGR-SRK-01",
@@ -462,7 +528,10 @@
     ],
     "source_id": 12,
     "type_source": "PM",
-    "forages_reference": [],
+    "forages_reference": [
+      "PM-SRK-ZANA-F1",
+      "PM-SRK-ZANA-F2"
+    ],
     "deja_reference": false,
     "surface_ha_source": 1,
     "equipement_interne": "Magasin de stockage, PM cloturé en Grillage",
@@ -477,7 +546,13 @@
     "donnees_techniques_a_confirmer": {
       "capacite_m3": 20,
       "nombre_forages": 1
-    }
+    },
+    "surface_ha": 1,
+    "capacite_stockage_m3_source_gps": 20,
+    "nombre_forages_documentes": 2,
+    "points_a_verifier": [
+      "Nombre de forages : 1 dans le fichier GPS; 2 documentés."
+    ]
   },
   {
     "code": "AGR-EXISTANT-13",
@@ -512,7 +587,10 @@
     "donnees_techniques_a_confirmer": {
       "capacite_m3": 20,
       "nombre_forages": 2
-    }
+    },
+    "surface_ha": 1,
+    "capacite_stockage_m3_source_gps": 20,
+    "nombre_forages_documentes": 2
   },
   {
     "code": "AGR-EXISTANT-14",
@@ -547,7 +625,10 @@
     "donnees_techniques_a_confirmer": {
       "capacite_m3": 20,
       "nombre_forages": 2
-    }
+    },
+    "surface_ha": 1,
+    "capacite_stockage_m3_source_gps": 20,
+    "nombre_forages_documentes": 2
   },
   {
     "code": "AGR-EXISTANT-15",
@@ -582,7 +663,10 @@
     "donnees_techniques_a_confirmer": {
       "capacite_m3": 20,
       "nombre_forages": 2
-    }
+    },
+    "surface_ha": 1,
+    "capacite_stockage_m3_source_gps": 20,
+    "nombre_forages_documentes": 2
   },
   {
     "code": "AGR-EXISTANT-16",
@@ -617,146 +701,9 @@
     "donnees_techniques_a_confirmer": {
       "capacite_m3": 20,
       "nombre_forages": 2
-    }
-  },
-  {
-    "code": "AGR-EXISTANT-17",
-    "commune": "Doumba",
-    "site": "Doumba",
-    "type": "CRR",
-    "lot": null,
-    "taux_execution_pct": null,
-    "source": "Classeur GPS des 20 AGRs VF",
-    "source_pages_pdf": [],
-    "source_pages_imprimees": [],
-    "latitude": 13.1146923829,
-    "longitude": -7.5932626109,
-    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
-    "source_id": 17,
-    "type_source": "CCR",
-    "forages_reference": [
-      "CRR-DOUMBA-F1",
-      "CRR-DOUMBA-F3"
-    ],
-    "deja_reference": true,
-    "surface_ha_source": 2,
-    "equipement_interne": "Bureau, Salle de reunion et loge gardien, CRR cloturé en grillage",
-    "systeme_adduction": "Semi-californien",
-    "source_coordonnees": {
-      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
-      "feuille": "champs_ajouts",
-      "ligne": 18,
-      "cellule_longitude": "K18",
-      "cellule_latitude": "L18"
     },
-    "donnees_techniques_a_confirmer": {
-      "capacite_m3": 30,
-      "nombre_forages": 2
-    }
-  },
-  {
-    "code": "AGR-EXISTANT-18",
-    "commune": "Koula",
-    "site": "Koula",
-    "type": "CRR",
-    "lot": null,
-    "taux_execution_pct": null,
-    "source": "Classeur GPS des 20 AGRs VF",
-    "source_pages_pdf": [],
-    "source_pages_imprimees": [],
-    "latitude": 13.1035915505,
-    "longitude": -7.6474093555,
-    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
-    "source_id": 18,
-    "type_source": "CCR",
-    "forages_reference": [
-      "CRR-KOULA-F2",
-      "CRR-KOULA-F4"
-    ],
-    "deja_reference": true,
-    "surface_ha_source": 2,
-    "equipement_interne": "Bureau, Salle de reunion et loge gardien, CRR cloturé en grillage",
-    "systeme_adduction": "Semi-californien",
-    "source_coordonnees": {
-      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
-      "feuille": "champs_ajouts",
-      "ligne": 19,
-      "cellule_longitude": "K19",
-      "cellule_latitude": "L19"
-    },
-    "donnees_techniques_a_confirmer": {
-      "capacite_m3": 30,
-      "nombre_forages": 2
-    }
-  },
-  {
-    "code": "AGR-EXISTANT-19",
-    "commune": "Sirakorola",
-    "site": "Sirakorola",
-    "type": "CRR",
-    "lot": null,
-    "taux_execution_pct": null,
-    "source": "Classeur GPS des 20 AGRs VF",
-    "source_pages_pdf": [],
-    "source_pages_imprimees": [],
-    "latitude": 13.2904034473,
-    "longitude": -7.5606349022,
-    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
-    "source_id": 19,
-    "type_source": "CCR",
-    "forages_reference": [
-      "CRR-SIRAKOROLA-F1",
-      "CRR-SIRAKOROLA-F2"
-    ],
-    "deja_reference": true,
-    "surface_ha_source": 2,
-    "equipement_interne": "Bureau, Salle de reunion et loge gardien, CRR cloturé en grillage",
-    "systeme_adduction": "Semi-californien",
-    "source_coordonnees": {
-      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
-      "feuille": "champs_ajouts",
-      "ligne": 20,
-      "cellule_longitude": "K20",
-      "cellule_latitude": "L20"
-    },
-    "donnees_techniques_a_confirmer": {
-      "capacite_m3": 30,
-      "nombre_forages": 2
-    }
-  },
-  {
-    "code": "AGR-EXISTANT-20",
-    "commune": "Méguétan",
-    "site": "Kékan",
-    "type": "CRR",
-    "lot": null,
-    "taux_execution_pct": null,
-    "source": "Classeur GPS des 20 AGRs VF",
-    "source_pages_pdf": [],
-    "source_pages_imprimees": [],
-    "latitude": 12.8801309339,
-    "longitude": -7.5237141788,
-    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
-    "source_id": 20,
-    "type_source": "CCR",
-    "forages_reference": [
-      "CRR-KEKAN-F1",
-      "CRR-KEKAN-F2"
-    ],
-    "deja_reference": true,
-    "surface_ha_source": 2,
-    "equipement_interne": "Bureau, Salle de reunion et loge gardien, CRR cloturé en grillage",
-    "systeme_adduction": "Semi-californien",
-    "source_coordonnees": {
-      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
-      "feuille": "champs_ajouts",
-      "ligne": 21,
-      "cellule_longitude": "K21",
-      "cellule_latitude": "L21"
-    },
-    "donnees_techniques_a_confirmer": {
-      "capacite_m3": 30,
-      "nombre_forages": 2
-    }
+    "surface_ha": 1,
+    "capacite_stockage_m3_source_gps": 20,
+    "nombre_forages_documentes": 2
   }
 ]

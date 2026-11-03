@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Download, Droplets, Gauge, MapPin, PanelsTopLeft, Sun, TestTube2, Waves, Tractor } from "lucide-react";
 import IntegratedAssetsMap from "@/components/ouvrages/IntegratedAssetsMap";
 import SecureDocumentButton from "@/components/ouvrages/SecureDocumentButton";
-import resumeData from "@/public/data/referentiels/referentiel_resume.json";
 import foragesData from "@/public/data/referentiels/forages_exploitation_crr_pm.json";
 import piezometresData from "@/public/data/referentiels/piezometres_reference.json";
 import analysesData from "@/public/data/referentiels/analyses_eau_piezometres_manifest.json";
@@ -14,18 +13,20 @@ import { authFetch } from "@/lib/auth-client";
 
 import agrData from "@/public/data/referentiels/infrastructures_agr_2026.json";
 
-type Forage = { code:string; composante:string; commune:string; site:string; forage:string; latitude:number; longitude:number; hmt_m:number; cote_installation_pompe_m:number; debit_exploitation_m3h:number; nombre_modules:number; puissance_installee_kwc:number; marque_pompe:string; entreprise:string };
+type Forage = { profondeur_foree_m?:number; debit_essai_courte_duree_m3h?:number|null; debit_maximal_essai_longue_duree_m3h?:number|null; alertes_source?:string[]; source_pages_pdf?:number[]; code:string; composante:string; commune:string; site:string; forage:string; latitude:number|null; longitude:number|null; hmt_m:number; cote_installation_pompe_m:number; debit_exploitation_m3h:number|null; nombre_modules:number; puissance_installee_kwc:number; marque_pompe:string; entreprise:string };
 type Piezo = { code:string; commune:string; village:string; point_implantation:string; latitude:number; longitude:number; profondeur_totale_m?:number; niveau_statique_m?:number; debit_developpement_m3h?:number; rabattement_max_m?:number; analyse_eau_disponible:boolean };
 type Microbarrage = { code:string; nom:string; commune:string; village:string; latitude:number; longitude:number; annee_construction:number; surface_bassin_versant_km2:number; surface_inondee_ha:number; surface_riziculture_ha:number; surface_maraichage_ha:number; nombre_exploitants:number; crue_projet_100ans_m3s:number; diagnostic_avant:string[]; travaux_realises:string[]; curage_surface_ha:number; curage_profondeur_m:number; curage_volume_estime_m3:number; lignes_cordons_pierreux:number; digue_filtrante_longueur_m:number;  cordons_pierreux_ml?:number; digue_filtrante_gabion_m3?:number; euphorbia_ml?:number; date_reception_provisoire?:string; taux_execution_pct?:number; statut_travaux:string; source:string };
 
 type Tab = "forages"|"piezos"|"qualite"|"microbarrages"|"agr";
 
-function fmt(v:any, digits=1){ const n=Number(v); return Number.isFinite(n) ? n.toLocaleString("fr-FR",{maximumFractionDigits:digits}) : "—"; }
+function fmt(v:any, digits=1){ if(v===null||v===undefined||v==="")return "—"; const n=Number(v); return Number.isFinite(n) ? n.toLocaleString("fr-FR",{maximumFractionDigits:digits}) : "—"; }
 function money(v:number){ return `${Number(v||0).toLocaleString("fr-FR")} FCFA`; }
 
 export default function OuvragesIntegratedDashboard(){
   const { isSuperAdmin } = useRole();
   const [financials,setFinancials]=useState<Record<string,number>>({});
+  const [agrFinancials,setAgrFinancials]=useState<Record<string,any>>({});
+  const [agrExportError,setAgrExportError]=useState("");
   const [tab,setTab]=useState<Tab>("forages");
   const [filter,setFilter]=useState("Tous");
   const [expanded,setExpanded]=useState<string|null>(null);
@@ -46,8 +47,13 @@ export default function OuvragesIntegratedDashboard(){
     return()=>{active=false};
   },[isSuperAdmin]);
 
+  useEffect(()=>{let active=true;if(!isSuperAdmin){setAgrFinancials({});return;}authFetch("/api/ouvrages/agr/finances").then(async res=>{if(!res.ok)throw new Error(`HTTP ${res.status}`);return res.json();}).then(j=>{if(active)setAgrFinancials(Object.fromEntries((j.rows||[]).map((x:any)=>[x.code,x])));}).catch(()=>{if(active)setAgrFinancials({});});return()=>{active=false};},[isSuperAdmin]);
+  async function downloadAgrCosts(){setAgrExportError("");try{const res=await authFetch("/api/ouvrages/agr/finances?format=csv");if(!res.ok)throw new Error(`HTTP ${res.status}`);const url=URL.createObjectURL(await res.blob());const a=document.createElement("a");a.href=url;a.download="agr-couts-ht.csv";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch(e:any){setAgrExportError(e.message||"Export indisponible");}}
+  const knownFlows=forages.filter(f=>f.debit_exploitation_m3h!==null&&Number.isFinite(f.debit_exploitation_m3h));
+  const totalFlow=knownFlows.reduce((sum,f)=>sum+(f.debit_exploitation_m3h??0),0);
+  const solarModules=forages.reduce((sum,f)=>sum+Number(f.nombre_modules||0),0);
+  const solarKwc=forages.reduce((sum,f)=>sum+Number(f.puissance_installee_kwc||0),0);
   const visibleForages=useMemo(()=>filter==="Tous"?forages:forages.filter(f=>f.composante===filter),[filter,forages]);
-  const r:any=resumeData;
   const barrageTotals=useMemo(()=>({
     cout:Object.values(financials).reduce<number>((s,v)=>s+Number(v||0),0),
     curageHa:barrages.reduce((s,b)=>s+b.curage_surface_ha,0),
@@ -59,10 +65,10 @@ export default function OuvragesIntegratedDashboard(){
   return <div className="integrated-observatory">
     <div className="build-version-badge">PSORE V4.4.1 · Données financières réservées au Super administrateur</div>
     <section className="integrated-kpis">
-      <article><PanelsTopLeft/><span>Forages d’exploitation</span><strong>16</strong><small>8 CRR + 8 PM</small></article>
-      <article><Tractor/><span>Sites AGR complémentaires</span><strong>{agrData.filter(a=>!a.deja_reference).length}</strong><small>{agrData.length} sites AGR recensés, dont 8 sites déjà référencés</small></article>
-      <article><Gauge/><span>Débit nominal cumulé</span><strong>{fmt(r.forages_exploitation.debit_nominal_total_m3h)} m³/h</strong><small>Somme des débits recommandés</small></article>
-      <article><Sun/><span>Équipement solaire</span><strong>{r.forages_exploitation.modules_pv} modules</strong><small>{fmt(r.forages_exploitation.puissance_installee_totale_kwc,2)} kWc calculés</small></article>
+      <article><PanelsTopLeft/><span>Forages d’exploitation</span><strong>{forages.length}</strong><small>{forages.filter(f=>f.composante==="CRR").length} CRR + {forages.filter(f=>f.composante==="PM").length} PM + {forages.filter(f=>f.composante==="EP").length} EP</small></article>
+      <article><Tractor/><span>AGR (PM, BIA, EP, UAB)</span><strong>{agrData.length}</strong><small>Sites aménagés, distincts des forages</small></article>
+      <article><Gauge/><span>Débits d’exploitation renseignés</span><strong>{fmt(totalFlow)} m³/h</strong><small>{knownFlows.length}/{forages.length} débits renseignés; aucun volume mesuré déduit</small></article>
+      <article><Sun/><span>Équipement solaire</span><strong>{solarModules} modules</strong><small>{fmt(solarKwc,2)} kWc théoriques calculés depuis les modules</small></article>
       <article><Droplets/><span>Piézomètres</span><strong>20</strong><small>20 essais de pompage</small></article>
       <article><Waves/><span>Micro-barrages</span><strong>4</strong><small>Travaux exécutés à 100 % et réceptionnés provisoirement</small></article>
       <article><TestTube2/><span>Analyses d’eau</span><strong>20/20</strong><small>Certificats référencés</small></article>
@@ -70,26 +76,28 @@ export default function OuvragesIntegratedDashboard(){
 
     <IntegratedAssetsMap showFinancials={isSuperAdmin} financials={financials} />
 
-    <section className="panel integrated-reference-note"><strong>Référentiel validé</strong><span>WGS 84 / UTM 29N — EPSG:32629</span><span>CIP = cote d’installation de la pompe</span><span>Nadiobougou : second forage = F2</span><span>Micro-barrages : quantités exécutées selon le rapport CEST n°03</span></section>
+    <section className="panel integrated-reference-note"><strong>Référentiels et sources</strong><span>Forages antérieurs : UTM 29N / WGS 84; sites AGR : longitude/latitude du fichier GPS</span><span>CIP = cote d’installation de la pompe</span><span>Nadiobougou : second forage = F2</span><span>Micro-barrages : quantités exécutées selon le rapport CEST n°03</span></section>
 
     <div className="map-tools ouvrages-tabs" role="tablist" aria-label="Catégories d’ouvrages">
-      <button className={tab==="forages"?"btn btn-primary":"btn btn-soft"} onClick={()=>setTab("forages")}>Forages CRR / PM</button>
+      <button className={tab==="forages"?"btn btn-primary":"btn btn-soft"} onClick={()=>setTab("forages")}>Forages CRR / PM / EP</button>
       <button className={tab==="piezos"?"btn btn-primary":"btn btn-soft"} onClick={()=>setTab("piezos")}>Piézomètres et essais</button>
       <button className={tab==="qualite"?"btn btn-primary":"btn btn-soft"} onClick={()=>setTab("qualite")}>Analyses d’eau</button>
       <button className={tab==="microbarrages"?"btn btn-primary":"btn btn-soft"} onClick={()=>setTab("microbarrages")}><Waves size={17}/> Micro-barrages</button>
-      <button className={tab==="agr"?"btn btn-primary":"btn btn-soft"} onClick={()=>setTab("agr")}>Infrastructures AGR ({agrData.length})</button>
+      <button className={tab==="agr"?"btn btn-primary":"btn btn-soft"} onClick={()=>setTab("agr")}>AGR (PM, BIA, EP, UAB) · {agrData.length}</button>
     </div>
 
     {tab==="agr" && <section className="panel">
-      <div className="panel-title-row"><div><h2>Sites et infrastructures AGR</h2><p>Coordonnées : fichier GPS des 20 AGRs VF. Les 12 sites complémentaires sont documentés par le rapport final CEST du 14 août 2026. Un site peut être associé à plusieurs forages.</p></div><a className="btn btn-soft" href="/data/referentiels/infrastructures_agr_2026.csv" download><Download size={16}/> CSV</a></div>
-      <p className="notice-empty">Les 20 sites ont des coordonnées GPS. Les 8 sites déjà associés aux forages restent reliés à ces ouvrages; seuls les 12 sites complémentaires ajoutent des repères AGR. Les capacités et nombres de forages des nouveaux sites restent à confirmer avant agrégation.</p>
-      <div className="table-wrap"><table><thead><tr><th>Code</th><th>Commune</th><th>Site</th><th>Infrastructure</th><th>Lot</th><th>Exécution</th><th>Référentiel</th><th>Source (pages PDF)</th><th>Géolocalisation</th></tr></thead><tbody>{agrData.map(a=><tr key={a.code}><td>{a.code}</td><td>{a.commune}</td><td>{a.site}</td><td>{a.type}</td><td>{a.lot}</td><td>{a.taux_execution_pct===null?"—":`${a.taux_execution_pct} %`}</td><td>{a.deja_reference?`Site existant · ${a.forages_reference.join(", ")}`:"Site complémentaire"}</td><td>{a.source_pages_pdf.join(", ")||"Fichier GPS AGR VF"}</td><td>{a.statut_geolocalisation}{a.latitude!==null&&a.longitude!==null&&<small> · {fmt(a.latitude,5)}, {fmt(a.longitude,5)}</small>}</td></tr>)}</tbody></table></div>
+      <div className="panel-title-row"><div><h2>AGR (PM, BIA, EP, UAB)</h2><p>PM : périmètre maraîcher · BIA : boutique d’intrants agricoles · EP : étang piscicole · UAB : unité d’aliment bétail. Les CRR restent dans le référentiel des forages.</p></div><a className="btn btn-soft" href="/data/referentiels/infrastructures_agr_2026.csv" download><Download size={16}/> CSV AGR</a></div>
+      <p>Superficies et équipements : fichier GPS AGR VF. Les coûts disponibles portent sur les périmètres de travaux indiqués; une tranche d’aménagement ne représente pas le coût complet.</p>
+      {isSuperAdmin&&<button className="btn btn-soft" onClick={downloadAgrCosts}>Exporter les coûts HT</button>}{agrExportError&&<p role="alert">{agrExportError}</p>}
+      <div className="table-wrap"><table><thead><tr><th>Site / code</th><th>Commune</th><th>Type</th><th>Superficie</th><th>Équipements / adduction</th><th>Forages liés</th>{isSuperAdmin&&<th>Montant HT et périmètre</th>}</tr></thead><tbody>{agrData.map(a=><tr key={a.code}><td><strong>{a.site}</strong><br/>{a.code}</td><td>{a.commune}</td><td>{a.type}</td><td>{fmt(a.surface_ha,2)}{a.surface_ha!==null?" ha":""}</td><td>{a.equipement_interne||"Non renseigné"}<br/>{a.systeme_adduction||""}</td><td>{a.forages_reference.join(", ")||"Non concerné / non renseigné"}{a.points_a_verifier&&<details><summary>Réserves source</summary>{a.points_a_verifier.map((v,i)=><p key={i}>{v}</p>)}</details>}</td>{isSuperAdmin&&<td>{agrFinancials[a.code]?<>{money(agrFinancials[a.code].montant_ht_fcfa)}<p>{agrFinancials[a.code].perimetre}</p><small>{agrFinancials[a.code].methode} · PDF p.{agrFinancials[a.code].source_pages_pdf.join(", ")} · {agrFinancials[a.code].reserve}</small></>:"Non renseigné"}</td>}</tr>)}</tbody></table></div>
     </section>}
 
     {tab==="forages" && <section className="panel">
-      <div className="panel-title-row"><div><h2>Forages d’exploitation</h2><p>Référentiel consolidé des composantes CRR et PM.</p></div><a className="btn btn-soft" href="/data/referentiels/forages_exploitation_crr_pm.csv" download><Download size={16}/> CSV</a></div>
-      <div className="map-tools"><button className={filter==="Tous"?"btn btn-primary":"btn btn-soft"} onClick={()=>setFilter("Tous")}>Tous (16)</button><button className={filter==="CRR"?"btn btn-primary":"btn btn-soft"} onClick={()=>setFilter("CRR")}>CRR (8)</button><button className={filter==="PM"?"btn btn-primary":"btn btn-soft"} onClick={()=>setFilter("PM")}>PM (8)</button></div>
-      <div className="table-wrap"><table><thead><tr><th>Code</th><th>Composante</th><th>Site</th><th>Forage</th><th>Débit</th><th>HMT</th><th>CIP</th><th>Solaire</th><th>Position</th></tr></thead><tbody>{visibleForages.map(f=><tr key={f.code}><td><strong>{f.code}</strong></td><td><span className={`tag ${f.composante.toLowerCase()}`}>{f.composante}</span></td><td>{f.commune} / {f.site}</td><td>{f.forage}</td><td>{fmt(f.debit_exploitation_m3h)} m³/h</td><td>{fmt(f.hmt_m)} m</td><td>{fmt(f.cote_installation_pompe_m)} m</td><td>{f.nombre_modules} modules · {fmt(f.puissance_installee_kwc,2)} kWc</td><td><MapPin size={14}/> {fmt(f.latitude,5)}, {fmt(f.longitude,5)}</td></tr>)}</tbody></table></div>
+      <div className="panel-title-row"><div><h2>Forages d’exploitation</h2><p>Référentiel par forage CRR, PM et EP. Débits d’essai, maxima d’essai long et débit d’exploitation restent distincts.</p></div><a className="btn btn-soft" href="/data/referentiels/forages_exploitation_crr_pm.csv" download><Download size={16}/> CSV forages</a></div>
+      <div className="map-tools">{["Tous","CRR","PM","EP"].map(v=><button key={v} className={filter===v?"btn btn-primary":"btn btn-soft"} onClick={()=>setFilter(v)}>{v} ({v==="Tous"?forages.length:forages.filter(f=>f.composante===v).length})</button>)}</div>
+      <p className="notice-empty">Aucun volume prélevé n’est déduit des seuls débits. Un volume mesuré exige des index de compteur datés; une estimation exige un débit et une durée documentés. Les 18 nouveaux forages sont rattachés au site AGR sans coordonnées individuelles validées.</p>
+      <div className="table-wrap"><table><thead><tr><th>Code / source</th><th>Composante / site</th><th>Forage</th><th>Débit d’exploitation</th><th>Essai court</th><th>Maximum essai long</th><th>Profondeur / HMT / CIP</th><th>Pompe / solaire</th><th>Qualité / position</th></tr></thead><tbody>{visibleForages.map(f=><tr key={f.code}><td><strong>{f.code}</strong>{f.source_pages_pdf&&<small> · Rapport PDF p.{f.source_pages_pdf.join(", ")}</small>}</td><td>{f.composante}<br/>{f.commune} / {f.site}</td><td>{f.forage}</td><td>{fmt(f.debit_exploitation_m3h)} m³/h</td><td>{fmt(f.debit_essai_courte_duree_m3h)} m³/h</td><td>{fmt(f.debit_maximal_essai_longue_duree_m3h)} m³/h</td><td>{fmt(f.profondeur_foree_m)} / {fmt(f.hmt_m)} / {fmt(f.cote_installation_pompe_m)} m</td><td>{f.marque_pompe}<br/>{f.nombre_modules} modules · {fmt(f.puissance_installee_kwc,2)} kWc calculés</td><td>{f.latitude===null||f.longitude===null?"Coordonnées individuelles non renseignées; site AGR identifié":`${fmt(f.latitude,5)}, ${fmt(f.longitude,5)}`}{f.alertes_source&&<details><summary>Réserves de la source</summary>{f.alertes_source.map((v,i)=><p key={i}>{v}</p>)}</details>}</td></tr>)}</tbody></table></div>
     </section>}
 
     {tab==="piezos" && <section className="panel">
