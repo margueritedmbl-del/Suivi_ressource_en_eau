@@ -1,0 +1,762 @@
+[
+  {
+    "code": "AGR-SRK-02",
+    "commune": "Sirakorola",
+    "site": "N’Gabakoro",
+    "type": "PM",
+    "lot": 1,
+    "taux_execution_pct": 100,
+    "latitude": 13.2613739965,
+    "longitude": -7.4806433349,
+    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
+    "source": "Rapport final AGR CEST du 14 août 2026",
+    "source_pages_pdf": [
+      9,
+      10,
+      30
+    ],
+    "source_pages_imprimees": [
+      8,
+      9,
+      29
+    ],
+    "source_id": 1,
+    "type_source": "PM",
+    "forages_reference": [],
+    "deja_reference": false,
+    "surface_ha_source": 1,
+    "equipement_interne": "Magasin de stockage, PM cloturé en Grillage",
+    "systeme_adduction": "Californien",
+    "source_coordonnees": {
+      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
+      "feuille": "champs_ajouts",
+      "ligne": 2,
+      "cellule_longitude": "K2",
+      "cellule_latitude": "L2"
+    },
+    "donnees_techniques_a_confirmer": {
+      "capacite_m3": 20,
+      "nombre_forages": 2
+    }
+  },
+  {
+    "code": "AGR-SRK-04",
+    "commune": "Sirakorola",
+    "site": "Dogoni",
+    "type": "PM",
+    "lot": 1,
+    "taux_execution_pct": 100,
+    "latitude": 13.1978361607,
+    "longitude": -7.551887798,
+    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
+    "source": "Rapport final AGR CEST du 14 août 2026",
+    "source_pages_pdf": [
+      9,
+      10,
+      30
+    ],
+    "source_pages_imprimees": [
+      8,
+      9,
+      29
+    ],
+    "source_id": 2,
+    "type_source": "PM",
+    "forages_reference": [],
+    "deja_reference": false,
+    "surface_ha_source": 1,
+    "equipement_interne": "Magasin de stockage, PM cloturé en Grillage",
+    "systeme_adduction": "Californien",
+    "source_coordonnees": {
+      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
+      "feuille": "champs_ajouts",
+      "ligne": 3,
+      "cellule_longitude": "K3",
+      "cellule_latitude": "L3"
+    },
+    "donnees_techniques_a_confirmer": {
+      "capacite_m3": 20,
+      "nombre_forages": 2
+    }
+  },
+  {
+    "code": "AGR-SRK-03",
+    "commune": "Sirakorola",
+    "site": "M’Pièbougou",
+    "type": "PM",
+    "lot": 1,
+    "taux_execution_pct": 100,
+    "latitude": 13.28152,
+    "longitude": -7.492873,
+    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
+    "source": "Rapport final AGR CEST du 14 août 2026",
+    "source_pages_pdf": [
+      9,
+      10,
+      30
+    ],
+    "source_pages_imprimees": [
+      8,
+      9,
+      29
+    ],
+    "source_id": 3,
+    "type_source": "PM",
+    "forages_reference": [],
+    "deja_reference": false,
+    "surface_ha_source": 1,
+    "equipement_interne": "Magasin de stockage, PM cloturé en Grillage",
+    "systeme_adduction": "Californien",
+    "source_coordonnees": {
+      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
+      "feuille": "champs_ajouts",
+      "ligne": 4,
+      "cellule_longitude": "K4",
+      "cellule_latitude": "L4"
+    },
+    "donnees_techniques_a_confirmer": {
+      "capacite_m3": 20,
+      "nombre_forages": 2
+    }
+  },
+  {
+    "code": "AGR-KLA-07",
+    "commune": "Koula",
+    "site": "Fassoumbougou",
+    "type": "PM",
+    "lot": 2,
+    "taux_execution_pct": 100,
+    "latitude": 13.0634903112,
+    "longitude": -7.8112413788,
+    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
+    "source": "Rapport final AGR CEST du 14 août 2026",
+    "source_pages_pdf": [
+      9,
+      10,
+      31
+    ],
+    "source_pages_imprimees": [
+      8,
+      9,
+      30
+    ],
+    "source_id": 4,
+    "type_source": "PM",
+    "forages_reference": [],
+    "deja_reference": false,
+    "surface_ha_source": 1,
+    "equipement_interne": "Magasin de stockage, PM cloturé en Grillage",
+    "systeme_adduction": "Californien",
+    "source_coordonnees": {
+      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
+      "feuille": "champs_ajouts",
+      "ligne": 5,
+      "cellule_longitude": "K5",
+      "cellule_latitude": "L5"
+    },
+    "donnees_techniques_a_confirmer": {
+      "capacite_m3": 20,
+      "nombre_forages": 2
+    }
+  },
+  {
+    "code": "AGR-KLA-06",
+    "commune": "Koula",
+    "site": "Tamani Bassala",
+    "type": "PM",
+    "lot": 2,
+    "taux_execution_pct": 100,
+    "latitude": 13.1170314167,
+    "longitude": -7.8363278837,
+    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
+    "source": "Rapport final AGR CEST du 14 août 2026",
+    "source_pages_pdf": [
+      9,
+      10,
+      31
+    ],
+    "source_pages_imprimees": [
+      8,
+      9,
+      30
+    ],
+    "source_id": 5,
+    "type_source": "PM",
+    "forages_reference": [],
+    "deja_reference": false,
+    "surface_ha_source": 1,
+    "equipement_interne": "Magasin de stockage, PM cloturé en Grillage",
+    "systeme_adduction": "Californien",
+    "source_coordonnees": {
+      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
+      "feuille": "champs_ajouts",
+      "ligne": 6,
+      "cellule_longitude": "K6",
+      "cellule_latitude": "L6"
+    },
+    "donnees_techniques_a_confirmer": {
+      "capacite_m3": 20,
+      "nombre_forages": 2
+    }
+  },
+  {
+    "code": "AGR-MGT-08",
+    "commune": "Méguétan",
+    "site": "Fèya",
+    "type": "PM",
+    "lot": 3,
+    "taux_execution_pct": 100,
+    "latitude": 12.9308101747,
+    "longitude": -7.6460469795,
+    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
+    "source": "Rapport final AGR CEST du 14 août 2026",
+    "source_pages_pdf": [
+      9,
+      10,
+      32
+    ],
+    "source_pages_imprimees": [
+      8,
+      9,
+      31
+    ],
+    "source_id": 6,
+    "type_source": "PM",
+    "forages_reference": [],
+    "deja_reference": false,
+    "surface_ha_source": 1,
+    "equipement_interne": "Magasin de stockage, PM cloturé en Grillage",
+    "systeme_adduction": "Californien",
+    "source_coordonnees": {
+      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
+      "feuille": "champs_ajouts",
+      "ligne": 7,
+      "cellule_longitude": "K7",
+      "cellule_latitude": "L7"
+    },
+    "donnees_techniques_a_confirmer": {
+      "capacite_m3": 20,
+      "nombre_forages": 2
+    }
+  },
+  {
+    "code": "AGR-MGT-09",
+    "commune": "Méguétan",
+    "site": "Dogoni",
+    "type": "PM",
+    "lot": 3,
+    "taux_execution_pct": 100,
+    "latitude": 12.9541791491,
+    "longitude": -7.6963377623,
+    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
+    "source": "Rapport final AGR CEST du 14 août 2026",
+    "source_pages_pdf": [
+      9,
+      10,
+      32
+    ],
+    "source_pages_imprimees": [
+      8,
+      9,
+      31
+    ],
+    "source_id": 7,
+    "type_source": "PM",
+    "forages_reference": [],
+    "deja_reference": false,
+    "surface_ha_source": 1,
+    "equipement_interne": "Magasin de stockage, PM cloturé en Grillage",
+    "systeme_adduction": "Californien",
+    "source_coordonnees": {
+      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
+      "feuille": "champs_ajouts",
+      "ligne": 8,
+      "cellule_longitude": "K8",
+      "cellule_latitude": "L8"
+    },
+    "donnees_techniques_a_confirmer": {
+      "capacite_m3": 20,
+      "nombre_forages": 2
+    }
+  },
+  {
+    "code": "AGR-MGT-10",
+    "commune": "Méguétan",
+    "site": "Tanabougou",
+    "type": "Pisciculture",
+    "lot": 3,
+    "taux_execution_pct": 100,
+    "latitude": 12.9478895179,
+    "longitude": -7.588974708,
+    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
+    "source": "Rapport final AGR CEST du 14 août 2026",
+    "source_pages_pdf": [
+      9,
+      10,
+      32
+    ],
+    "source_pages_imprimees": [
+      8,
+      9,
+      31
+    ],
+    "source_id": 8,
+    "type_source": "Pisciculture",
+    "forages_reference": [],
+    "deja_reference": false,
+    "surface_ha_source": 0.25,
+    "equipement_interne": null,
+    "systeme_adduction": null,
+    "source_coordonnees": {
+      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
+      "feuille": "champs_ajouts",
+      "ligne": 9,
+      "cellule_longitude": "K9",
+      "cellule_latitude": "L9"
+    },
+    "donnees_techniques_a_confirmer": {
+      "capacite_m3": 20,
+      "nombre_forages": 2
+    }
+  },
+  {
+    "code": "AGR-DMB-12",
+    "commune": "Doumba",
+    "site": "Kossaba",
+    "type": "Boutique d’intrants",
+    "lot": 4,
+    "taux_execution_pct": 100,
+    "latitude": 13.1440813018,
+    "longitude": -7.5965294564,
+    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
+    "source": "Rapport final AGR CEST du 14 août 2026",
+    "source_pages_pdf": [
+      9,
+      10,
+      33
+    ],
+    "source_pages_imprimees": [
+      8,
+      9,
+      32
+    ],
+    "source_coordonnees": {
+      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
+      "feuille": "champs_ajouts",
+      "ligne": 10,
+      "cellule_longitude": "K10",
+      "cellule_latitude": "L10"
+    },
+    "source_id": 9,
+    "type_source": "Magasin de vente de semences et intrants agroécologiques",
+    "forages_reference": [],
+    "deja_reference": false,
+    "surface_ha_source": 0,
+    "equipement_interne": null,
+    "systeme_adduction": null,
+    "donnees_techniques_a_confirmer": {
+      "capacite_m3": 20,
+      "nombre_forages": 2
+    }
+  },
+  {
+    "code": "AGR-DMB-11",
+    "commune": "Doumba",
+    "site": "Dibaro",
+    "type": "Unité d’aliment bétail",
+    "lot": 4,
+    "taux_execution_pct": 100,
+    "latitude": 13.0639850008,
+    "longitude": -7.6174839532,
+    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
+    "source": "Rapport final AGR CEST du 14 août 2026",
+    "source_pages_pdf": [
+      9,
+      10,
+      33
+    ],
+    "source_pages_imprimees": [
+      8,
+      9,
+      32
+    ],
+    "source_id": 10,
+    "type_source": "Unité de transformation d'aliment bétail",
+    "forages_reference": [],
+    "deja_reference": false,
+    "surface_ha_source": 0,
+    "equipement_interne": null,
+    "systeme_adduction": null,
+    "source_coordonnees": {
+      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
+      "feuille": "champs_ajouts",
+      "ligne": 11,
+      "cellule_longitude": "K11",
+      "cellule_latitude": "L11"
+    },
+    "donnees_techniques_a_confirmer": {
+      "capacite_m3": 20,
+      "nombre_forages": 2
+    }
+  },
+  {
+    "code": "AGR-KLA-05",
+    "commune": "Koula",
+    "site": "Diéni",
+    "type": "PM",
+    "lot": 2,
+    "taux_execution_pct": 100,
+    "latitude": 13.1315360835,
+    "longitude": -7.6717006396,
+    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
+    "source": "Rapport final AGR CEST du 14 août 2026",
+    "source_pages_pdf": [
+      9,
+      10,
+      31
+    ],
+    "source_pages_imprimees": [
+      8,
+      9,
+      30
+    ],
+    "source_id": 11,
+    "type_source": "PM",
+    "forages_reference": [],
+    "deja_reference": false,
+    "surface_ha_source": 1,
+    "equipement_interne": "Magasin de stockage, PM cloturé en Grillage",
+    "systeme_adduction": "Californien",
+    "source_coordonnees": {
+      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
+      "feuille": "champs_ajouts",
+      "ligne": 12,
+      "cellule_longitude": "K12",
+      "cellule_latitude": "L12"
+    },
+    "donnees_techniques_a_confirmer": {
+      "capacite_m3": 20,
+      "nombre_forages": 2
+    }
+  },
+  {
+    "code": "AGR-SRK-01",
+    "commune": "Sirakorola",
+    "site": "Zana",
+    "type": "PM",
+    "lot": 1,
+    "taux_execution_pct": 100,
+    "latitude": 13.3681007859,
+    "longitude": -7.6799528231,
+    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
+    "source": "Rapport final AGR CEST du 14 août 2026",
+    "source_pages_pdf": [
+      9,
+      10,
+      30
+    ],
+    "source_pages_imprimees": [
+      8,
+      9,
+      29
+    ],
+    "source_id": 12,
+    "type_source": "PM",
+    "forages_reference": [],
+    "deja_reference": false,
+    "surface_ha_source": 1,
+    "equipement_interne": "Magasin de stockage, PM cloturé en Grillage",
+    "systeme_adduction": "Californien",
+    "source_coordonnees": {
+      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
+      "feuille": "champs_ajouts",
+      "ligne": 13,
+      "cellule_longitude": "K13",
+      "cellule_latitude": "L13"
+    },
+    "donnees_techniques_a_confirmer": {
+      "capacite_m3": 20,
+      "nombre_forages": 1
+    }
+  },
+  {
+    "code": "AGR-EXISTANT-13",
+    "commune": "Doumba",
+    "site": "Kénékélé",
+    "type": "PM",
+    "lot": null,
+    "taux_execution_pct": null,
+    "source": "Classeur GPS des 20 AGRs VF",
+    "source_pages_pdf": [],
+    "source_pages_imprimees": [],
+    "latitude": 13.0603920832,
+    "longitude": -7.5923626193,
+    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
+    "source_id": 13,
+    "type_source": "PM",
+    "forages_reference": [
+      "PM-KENEKELE-F1",
+      "PM-KENEKELE-F3"
+    ],
+    "deja_reference": true,
+    "surface_ha_source": 1,
+    "equipement_interne": "Magasin de stockage, PM cloturé en Grillage",
+    "systeme_adduction": "Californien",
+    "source_coordonnees": {
+      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
+      "feuille": "champs_ajouts",
+      "ligne": 14,
+      "cellule_longitude": "K14",
+      "cellule_latitude": "L14"
+    },
+    "donnees_techniques_a_confirmer": {
+      "capacite_m3": 20,
+      "nombre_forages": 2
+    }
+  },
+  {
+    "code": "AGR-EXISTANT-14",
+    "commune": "Doumba",
+    "site": "Nadiobougou",
+    "type": "PM",
+    "lot": null,
+    "taux_execution_pct": null,
+    "source": "Classeur GPS des 20 AGRs VF",
+    "source_pages_pdf": [],
+    "source_pages_imprimees": [],
+    "latitude": 13.0807148062,
+    "longitude": -7.6175251667,
+    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
+    "source_id": 14,
+    "type_source": "PM",
+    "forages_reference": [
+      "PM-NADIOBOUGOU-F1",
+      "PM-NADIOBOUGOU-F2"
+    ],
+    "deja_reference": true,
+    "surface_ha_source": 1,
+    "equipement_interne": "Magasin de stockage, PM cloturé en Grillage",
+    "systeme_adduction": "Californien",
+    "source_coordonnees": {
+      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
+      "feuille": "champs_ajouts",
+      "ligne": 15,
+      "cellule_longitude": "K15",
+      "cellule_latitude": "L15"
+    },
+    "donnees_techniques_a_confirmer": {
+      "capacite_m3": 20,
+      "nombre_forages": 2
+    }
+  },
+  {
+    "code": "AGR-EXISTANT-15",
+    "commune": "Doumba",
+    "site": "Babougou",
+    "type": "PM",
+    "lot": null,
+    "taux_execution_pct": null,
+    "source": "Classeur GPS des 20 AGRs VF",
+    "source_pages_pdf": [],
+    "source_pages_imprimees": [],
+    "latitude": 13.1533896293,
+    "longitude": -7.5696760477,
+    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
+    "source_id": 15,
+    "type_source": "PM",
+    "forages_reference": [
+      "PM-BABOUGOU-F1",
+      "PM-BABOUGOU-F2"
+    ],
+    "deja_reference": true,
+    "surface_ha_source": 1,
+    "equipement_interne": "Magasin de stockage, PM cloturé en Grillage",
+    "systeme_adduction": "Californien",
+    "source_coordonnees": {
+      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
+      "feuille": "champs_ajouts",
+      "ligne": 16,
+      "cellule_longitude": "K16",
+      "cellule_latitude": "L16"
+    },
+    "donnees_techniques_a_confirmer": {
+      "capacite_m3": 20,
+      "nombre_forages": 2
+    }
+  },
+  {
+    "code": "AGR-EXISTANT-16",
+    "commune": "Koula",
+    "site": "Monzona",
+    "type": "PM",
+    "lot": null,
+    "taux_execution_pct": null,
+    "source": "Classeur GPS des 20 AGRs VF",
+    "source_pages_pdf": [],
+    "source_pages_imprimees": [],
+    "latitude": 13.1783712181,
+    "longitude": -7.4416027765,
+    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
+    "source_id": 16,
+    "type_source": "PM",
+    "forages_reference": [
+      "PM-MONZONA-F1",
+      "PM-MONZONA-F3"
+    ],
+    "deja_reference": true,
+    "surface_ha_source": 1,
+    "equipement_interne": "Magasin de stockage, PM cloturé en Grillage",
+    "systeme_adduction": "Californien",
+    "source_coordonnees": {
+      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
+      "feuille": "champs_ajouts",
+      "ligne": 17,
+      "cellule_longitude": "K17",
+      "cellule_latitude": "L17"
+    },
+    "donnees_techniques_a_confirmer": {
+      "capacite_m3": 20,
+      "nombre_forages": 2
+    }
+  },
+  {
+    "code": "AGR-EXISTANT-17",
+    "commune": "Doumba",
+    "site": "Doumba",
+    "type": "CRR",
+    "lot": null,
+    "taux_execution_pct": null,
+    "source": "Classeur GPS des 20 AGRs VF",
+    "source_pages_pdf": [],
+    "source_pages_imprimees": [],
+    "latitude": 13.1146923829,
+    "longitude": -7.5932626109,
+    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
+    "source_id": 17,
+    "type_source": "CCR",
+    "forages_reference": [
+      "CRR-DOUMBA-F1",
+      "CRR-DOUMBA-F3"
+    ],
+    "deja_reference": true,
+    "surface_ha_source": 2,
+    "equipement_interne": "Bureau, Salle de reunion et loge gardien, CRR cloturé en grillage",
+    "systeme_adduction": "Semi-californien",
+    "source_coordonnees": {
+      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
+      "feuille": "champs_ajouts",
+      "ligne": 18,
+      "cellule_longitude": "K18",
+      "cellule_latitude": "L18"
+    },
+    "donnees_techniques_a_confirmer": {
+      "capacite_m3": 30,
+      "nombre_forages": 2
+    }
+  },
+  {
+    "code": "AGR-EXISTANT-18",
+    "commune": "Koula",
+    "site": "Koula",
+    "type": "CRR",
+    "lot": null,
+    "taux_execution_pct": null,
+    "source": "Classeur GPS des 20 AGRs VF",
+    "source_pages_pdf": [],
+    "source_pages_imprimees": [],
+    "latitude": 13.1035915505,
+    "longitude": -7.6474093555,
+    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
+    "source_id": 18,
+    "type_source": "CCR",
+    "forages_reference": [
+      "CRR-KOULA-F2",
+      "CRR-KOULA-F4"
+    ],
+    "deja_reference": true,
+    "surface_ha_source": 2,
+    "equipement_interne": "Bureau, Salle de reunion et loge gardien, CRR cloturé en grillage",
+    "systeme_adduction": "Semi-californien",
+    "source_coordonnees": {
+      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
+      "feuille": "champs_ajouts",
+      "ligne": 19,
+      "cellule_longitude": "K19",
+      "cellule_latitude": "L19"
+    },
+    "donnees_techniques_a_confirmer": {
+      "capacite_m3": 30,
+      "nombre_forages": 2
+    }
+  },
+  {
+    "code": "AGR-EXISTANT-19",
+    "commune": "Sirakorola",
+    "site": "Sirakorola",
+    "type": "CRR",
+    "lot": null,
+    "taux_execution_pct": null,
+    "source": "Classeur GPS des 20 AGRs VF",
+    "source_pages_pdf": [],
+    "source_pages_imprimees": [],
+    "latitude": 13.2904034473,
+    "longitude": -7.5606349022,
+    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
+    "source_id": 19,
+    "type_source": "CCR",
+    "forages_reference": [
+      "CRR-SIRAKOROLA-F1",
+      "CRR-SIRAKOROLA-F2"
+    ],
+    "deja_reference": true,
+    "surface_ha_source": 2,
+    "equipement_interne": "Bureau, Salle de reunion et loge gardien, CRR cloturé en grillage",
+    "systeme_adduction": "Semi-californien",
+    "source_coordonnees": {
+      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
+      "feuille": "champs_ajouts",
+      "ligne": 20,
+      "cellule_longitude": "K20",
+      "cellule_latitude": "L20"
+    },
+    "donnees_techniques_a_confirmer": {
+      "capacite_m3": 30,
+      "nombre_forages": 2
+    }
+  },
+  {
+    "code": "AGR-EXISTANT-20",
+    "commune": "Méguétan",
+    "site": "Kékan",
+    "type": "CRR",
+    "lot": null,
+    "taux_execution_pct": null,
+    "source": "Classeur GPS des 20 AGRs VF",
+    "source_pages_pdf": [],
+    "source_pages_imprimees": [],
+    "latitude": 12.8801309339,
+    "longitude": -7.5237141788,
+    "statut_geolocalisation": "Coordonnées du fichier GPS AGR VF",
+    "source_id": 20,
+    "type_source": "CCR",
+    "forages_reference": [
+      "CRR-KEKAN-F1",
+      "CRR-KEKAN-F2"
+    ],
+    "deja_reference": true,
+    "surface_ha_source": 2,
+    "equipement_interne": "Bureau, Salle de reunion et loge gardien, CRR cloturé en grillage",
+    "systeme_adduction": "Semi-californien",
+    "source_coordonnees": {
+      "classeur": "les coordonnées GPS des 20 AGRs VF.xlsx",
+      "feuille": "champs_ajouts",
+      "ligne": 21,
+      "cellule_longitude": "K21",
+      "cellule_latitude": "L21"
+    },
+    "donnees_techniques_a_confirmer": {
+      "capacite_m3": 30,
+      "nombre_forages": 2
+    }
+  }
+]

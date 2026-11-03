@@ -12,11 +12,13 @@ import microbarragesData from "@/public/data/referentiels/microbarrages_referenc
 import { useRole } from "@/components/auth/useRole";
 import { authFetch } from "@/lib/auth-client";
 
+import agrData from "@/public/data/referentiels/infrastructures_agr_2026.json";
+
 type Forage = { code:string; composante:string; commune:string; site:string; forage:string; latitude:number; longitude:number; hmt_m:number; cote_installation_pompe_m:number; debit_exploitation_m3h:number; nombre_modules:number; puissance_installee_kwc:number; marque_pompe:string; entreprise:string };
 type Piezo = { code:string; commune:string; village:string; point_implantation:string; latitude:number; longitude:number; profondeur_totale_m?:number; niveau_statique_m?:number; debit_developpement_m3h?:number; rabattement_max_m?:number; analyse_eau_disponible:boolean };
 type Microbarrage = { code:string; nom:string; commune:string; village:string; latitude:number; longitude:number; annee_construction:number; surface_bassin_versant_km2:number; surface_inondee_ha:number; surface_riziculture_ha:number; surface_maraichage_ha:number; nombre_exploitants:number; crue_projet_100ans_m3s:number; diagnostic_avant:string[]; travaux_realises:string[]; curage_surface_ha:number; curage_profondeur_m:number; curage_volume_estime_m3:number; lignes_cordons_pierreux:number; digue_filtrante_longueur_m:number;  cordons_pierreux_ml?:number; digue_filtrante_gabion_m3?:number; euphorbia_ml?:number; date_reception_provisoire?:string; taux_execution_pct?:number; statut_travaux:string; source:string };
 
-type Tab = "forages"|"piezos"|"qualite"|"microbarrages";
+type Tab = "forages"|"piezos"|"qualite"|"microbarrages"|"agr";
 
 function fmt(v:any, digits=1){ const n=Number(v); return Number.isFinite(n) ? n.toLocaleString("fr-FR",{maximumFractionDigits:digits}) : "—"; }
 function money(v:number){ return `${Number(v||0).toLocaleString("fr-FR")} FCFA`; }
@@ -58,6 +60,7 @@ export default function OuvragesIntegratedDashboard(){
     <div className="build-version-badge">PSORE V4.4.1 · Données financières réservées au Super administrateur</div>
     <section className="integrated-kpis">
       <article><PanelsTopLeft/><span>Forages d’exploitation</span><strong>16</strong><small>8 CRR + 8 PM</small></article>
+      <article><Tractor/><span>Sites AGR complémentaires</span><strong>{agrData.filter(a=>!a.deja_reference).length}</strong><small>{agrData.length} sites AGR recensés, dont 8 sites déjà référencés</small></article>
       <article><Gauge/><span>Débit nominal cumulé</span><strong>{fmt(r.forages_exploitation.debit_nominal_total_m3h)} m³/h</strong><small>Somme des débits recommandés</small></article>
       <article><Sun/><span>Équipement solaire</span><strong>{r.forages_exploitation.modules_pv} modules</strong><small>{fmt(r.forages_exploitation.puissance_installee_totale_kwc,2)} kWc calculés</small></article>
       <article><Droplets/><span>Piézomètres</span><strong>20</strong><small>20 essais de pompage</small></article>
@@ -74,7 +77,14 @@ export default function OuvragesIntegratedDashboard(){
       <button className={tab==="piezos"?"btn btn-primary":"btn btn-soft"} onClick={()=>setTab("piezos")}>Piézomètres et essais</button>
       <button className={tab==="qualite"?"btn btn-primary":"btn btn-soft"} onClick={()=>setTab("qualite")}>Analyses d’eau</button>
       <button className={tab==="microbarrages"?"btn btn-primary":"btn btn-soft"} onClick={()=>setTab("microbarrages")}><Waves size={17}/> Micro-barrages</button>
+      <button className={tab==="agr"?"btn btn-primary":"btn btn-soft"} onClick={()=>setTab("agr")}>Infrastructures AGR ({agrData.length})</button>
     </div>
+
+    {tab==="agr" && <section className="panel">
+      <div className="panel-title-row"><div><h2>Sites et infrastructures AGR</h2><p>Coordonnées : fichier GPS des 20 AGRs VF. Les 12 sites complémentaires sont documentés par le rapport final CEST du 14 août 2026. Un site peut être associé à plusieurs forages.</p></div><a className="btn btn-soft" href="/data/referentiels/infrastructures_agr_2026.csv" download><Download size={16}/> CSV</a></div>
+      <p className="notice-empty">Les 20 sites ont des coordonnées GPS. Les 8 sites déjà associés aux forages restent reliés à ces ouvrages; seuls les 12 sites complémentaires ajoutent des repères AGR. Les capacités et nombres de forages des nouveaux sites restent à confirmer avant agrégation.</p>
+      <div className="table-wrap"><table><thead><tr><th>Code</th><th>Commune</th><th>Site</th><th>Infrastructure</th><th>Lot</th><th>Exécution</th><th>Référentiel</th><th>Source (pages PDF)</th><th>Géolocalisation</th></tr></thead><tbody>{agrData.map(a=><tr key={a.code}><td>{a.code}</td><td>{a.commune}</td><td>{a.site}</td><td>{a.type}</td><td>{a.lot}</td><td>{a.taux_execution_pct===null?"—":`${a.taux_execution_pct} %`}</td><td>{a.deja_reference?`Site existant · ${a.forages_reference.join(", ")}`:"Site complémentaire"}</td><td>{a.source_pages_pdf.join(", ")||"Fichier GPS AGR VF"}</td><td>{a.statut_geolocalisation}{a.latitude!==null&&a.longitude!==null&&<small> · {fmt(a.latitude,5)}, {fmt(a.longitude,5)}</small>}</td></tr>)}</tbody></table></div>
+    </section>}
 
     {tab==="forages" && <section className="panel">
       <div className="panel-title-row"><div><h2>Forages d’exploitation</h2><p>Référentiel consolidé des composantes CRR et PM.</p></div><a className="btn btn-soft" href="/data/referentiels/forages_exploitation_crr_pm.csv" download><Download size={16}/> CSV</a></div>

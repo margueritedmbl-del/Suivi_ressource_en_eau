@@ -7,9 +7,11 @@ import forages from "../../../../public/data/referentiels/forages_exploitation_c
 import piezometres from "../../../../public/data/referentiels/piezometres_reference.json";
 import analyses from "../../../../public/data/referentiels/analyses_eau_piezometres_manifest.json";
 
+import infrastructuresAGR from "../../../../public/data/referentiels/infrastructures_agr_2026.json";
+
 export async function GET() {
   return NextResponse.json(
-    { ok: true, resume, forages, piezometres, analyses },
+    { ok: true, resume, forages, piezometres, analyses, infrastructuresAGR },
     { headers: { "Cache-Control": "no-store, max-age=0" } }
   );
 }
