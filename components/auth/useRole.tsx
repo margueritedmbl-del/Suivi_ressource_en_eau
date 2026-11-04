@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useState} from "react";
 import {supabase} from "@/lib/supabase";
-import {ROLE_ADMIN,ROLE_DNH,ROLE_PUBLIC,ROLE_SUPER_ADMIN,canAccessDashboard,canAccessObservatoire,canAccessReports,canAccessSigDecisionnel,canAccessPrivateMap,canConfigureScenarios,canExportAdvanced,canExportCsvXlsx,canManageUsers,canSync,canViewInternal,canViewFinances} from "@/lib/permissions";
+import {canAccessOuvrages,canViewRestorations,ROLE_ADMIN,ROLE_DNH,ROLE_PUBLIC,ROLE_SUPER_ADMIN,canAccessDashboard,canAccessObservatoire,canAccessReports,canAccessSigDecisionnel,canAccessPrivateMap,canConfigureScenarios,canExportAdvanced,canExportCsvXlsx,canManageUsers,canSync,canViewInternal,canViewFinances} from "@/lib/permissions";
 export function useRole(){
  const[role,setRole]=useState(ROLE_PUBLIC),[loading,setLoading]=useState(true),[authenticated,setAuthenticated]=useState(false);
  useEffect(()=>{
@@ -23,5 +23,5 @@ export function useRole(){
   return()=>{active=false;subscription.unsubscribe()};
  },[]);
 
- return{role,loading,authenticated,isAdmin:role===ROLE_ADMIN,isSuperAdmin:role===ROLE_SUPER_ADMIN,isDnh:role===ROLE_DNH,canManage:canManageUsers(role),canOperate:canSync(role),canSync:canSync(role),canExportCsvXlsx:canExportCsvXlsx(role),canExportAdvanced:canExportAdvanced(role),canViewInternal:canViewInternal(role),canAccessDashboard:canAccessDashboard(role),canAccessObservatoire:canAccessObservatoire(role),canAccessReports:canAccessReports(role),canAccessSigDecisionnel:canAccessSigDecisionnel(role),canAccessPrivateMap:canAccessPrivateMap(role),canConfigureScenarios:canConfigureScenarios(role),canViewFinances:canViewFinances(role)};
+ return{role,loading,authenticated,canAccessOuvrages:canAccessOuvrages(role),canViewRestorations:canViewRestorations(role),isAdmin:role===ROLE_ADMIN,isSuperAdmin:role===ROLE_SUPER_ADMIN,isDnh:role===ROLE_DNH,canManage:canManageUsers(role),canOperate:canSync(role),canSync:canSync(role),canExportCsvXlsx:canExportCsvXlsx(role),canExportAdvanced:canExportAdvanced(role),canViewInternal:canViewInternal(role),canAccessDashboard:canAccessDashboard(role),canAccessObservatoire:canAccessObservatoire(role),canAccessReports:canAccessReports(role),canAccessSigDecisionnel:canAccessSigDecisionnel(role),canAccessPrivateMap:canAccessPrivateMap(role),canConfigureScenarios:canConfigureScenarios(role),canViewFinances:canViewFinances(role)};
 }

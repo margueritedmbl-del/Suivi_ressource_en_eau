@@ -9,8 +9,8 @@ function load(file,mocks={}){
 }
 (async()=>{
  const permissions=load('lib/permissions.ts');
- for(const role of ['Observateur','Collecteur','DNH/DRHK','Administrateur PTCS','Super administrateur'])assert.equal(permissions.canExportCsvXlsx(role),true);
- assert.equal(permissions.canExportCsvXlsx('Public'),false);
+ for(const role of ['DNH/DRHK','Administrateur PTCS','Super administrateur'])assert.equal(permissions.canExportCsvXlsx(role),true);
+ for(const role of ['Public','Observateur','Collecteur'])assert.equal(permissions.canExportCsvXlsx(role),false);
  assert.equal(permissions.canManageUsers('Collecteur'),false);
  const {toCsv}=load('services/exports/csv.ts');
  assert.equal(toCsv([{a:'x"y'},{b:0}]),'"a","b"\n"x""y",""\n"","0"');

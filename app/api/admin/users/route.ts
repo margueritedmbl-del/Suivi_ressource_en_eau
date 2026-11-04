@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 import { requireApiRole } from "@/lib/auth-server";
-import { ROLE_ADMIN, ROLE_SUPER_ADMIN } from "@/lib/permissions";
+import { isEnabledRole, ROLE_ADMIN, ROLE_SUPER_ADMIN } from "@/lib/permissions";
 
 export async function GET(req: NextRequest) {
   const auth = await requireApiRole(req, [ROLE_ADMIN, ROLE_SUPER_ADMIN]);
@@ -26,5 +26,5 @@ export async function GET(req: NextRequest) {
 
   if (rolesError) return NextResponse.json({ ok: false, error: rolesError.message }, { status: 500 });
 
-  return NextResponse.json({ ok: true, users: data || [], roles: roles || [] });
+  return NextResponse.json({ ok: true, users: (data || []).filter((u:any)=>auth.ctx.role===ROLE_SUPER_ADMIN||(Array.isArray(u.roles)?u.roles[0]?.nom_role:u.roles?.nom_role)!==ROLE_SUPER_ADMIN), roles: (roles || []).filter((r:any)=>isEnabledRole(r.nom_role)&&(auth.ctx.role===ROLE_SUPER_ADMIN||r.nom_role!==ROLE_SUPER_ADMIN)) },{headers:{"Cache-Control":"private, no-store"}});
 }

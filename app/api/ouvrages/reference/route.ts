@@ -1,3 +1,6 @@
+import {requireApiRole} from "@/lib/auth-server";
+import {ROLE_ADMIN,ROLE_SUPER_ADMIN} from "@/lib/permissions";
+import {NextRequest} from "next/server";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -9,7 +12,8 @@ import analyses from "../../../../public/data/referentiels/analyses_eau_piezomet
 
 import infrastructuresAGR from "../../../../public/data/referentiels/infrastructures_agr_2026.json";
 
-export async function GET() {
+export async function GET(req:NextRequest) {
+ const guard=await requireApiRole(req,[ROLE_ADMIN,ROLE_SUPER_ADMIN]);if(guard.response)return guard.response;
   return NextResponse.json(
     { ok: true, resume, forages, piezometres, analyses, infrastructuresAGR },
     { headers: { "Cache-Control": "no-store, max-age=0" } }

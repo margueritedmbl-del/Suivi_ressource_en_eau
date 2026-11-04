@@ -1,3 +1,4 @@
+import { checkManagedTarget, checkAssignableRole } from "@/lib/user-management-policy";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -35,6 +36,8 @@ export async function POST(req: NextRequest) {
   if (roleCheck.error) return NextResponse.json({ ok: false, error: roleCheck.error.message }, { status: 500 });
   if (!roleCheck.data?.id) return NextResponse.json({ ok: false, error: "Rôle introuvable." }, { status: 400 });
 
+  const roleDenied=await checkAssignableRole(auth.ctx.role,role_id);if(roleDenied)return roleDenied;
+  const targetDenied=await checkManagedTarget(auth.ctx.role,"email",cleanEmail);if(targetDenied)return targetDenied;
   let userId = "";
 
   if (mode === "invite") {
@@ -49,6 +52,7 @@ export async function POST(req: NextRequest) {
 
     const existingUser = await findAuthUserByEmail(cleanEmail);
     if (existingUser?.id) {
+      const denied=await checkManagedTarget(auth.ctx.role,"id",existingUser.id);if(denied)return denied;
       const updated = await supabaseAdmin.auth.admin.updateUserById(existingUser.id, {
         password,
         email_confirm: true,

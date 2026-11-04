@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-admin";
-import { ROLE_PUBLIC } from "@/lib/permissions";
+import { ROLE_PUBLIC, isEnabledRole } from "@/lib/permissions";
 
 export type AuthContext = {
   user: { id: string; email: string };
@@ -56,7 +56,7 @@ export async function requireApiRole(req: NextRequest, allowedRoles: string[]) {
     if (!ctx) {
       return { response: NextResponse.json({ ok: false, error: "Authentification requise." }, { status: 401 }) };
     }
-    if (!allowedRoles.includes(ctx.role)) {
+    if (!isEnabledRole(ctx.role) || !allowedRoles.includes(ctx.role)) {
       return { response: NextResponse.json({ ok: false, error: "Accès non autorisé.", role: ctx.role }, { status: 403 }) };
     }
     return { ctx };

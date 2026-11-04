@@ -1,5 +1,8 @@
+import {NextRequest} from "next/server";
+import {requireApiRole} from "@/lib/auth-server";
+import {ENABLED_ROLES} from "@/lib/permissions";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
 import { NextResponse } from "next/server";import { supabaseAdmin } from "@/lib/supabase-admin";
-export async function GET(){const {data,error}=await supabaseAdmin.from("points_eau").select("*").limit(5000);if(error)return NextResponse.json({ok:false,error:error.message},{status:500});return NextResponse.json({ok:true,data});}
+export async function GET(req: NextRequest){const guard=await requireApiRole(req,[...ENABLED_ROLES]);if(guard.response)return guard.response;const {data,error}=await supabaseAdmin.from("points_eau").select("*").limit(5000);if(error)return NextResponse.json({ok:false,error:error.message},{status:500});return NextResponse.json({ok:true,data});}

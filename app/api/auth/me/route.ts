@@ -1,3 +1,4 @@
+import {isEnabledRole} from "@/lib/permissions";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -57,5 +58,6 @@ export async function GET(req: NextRequest) {
   }
 
   if (profil?.actif === false) return NextResponse.json({ ok: false, user: { id: data.user.id, email }, profil, role: "Public", inactive: true });
+  if(!isEnabledRole(role))return NextResponse.json({ok:false,role:"Public",disabled:true,error:"Rôle temporairement désactivé."},{status:403});
   return NextResponse.json({ ok: true, user: { id: data.user.id, email }, profil, role });
 }

@@ -1,0 +1,3 @@
+"use client";
+import {useRole} from "@/components/auth/useRole";
+export default function RoleRules(){const {isSuperAdmin}=useRole();return <div className="panel"><h2>Règles d’accès</h2>{isSuperAdmin&&<p><strong>Super administrateur</strong> : accès total et paramètres critiques.</p>}<p><strong>Administrateur PTCS</strong> : gestion des comptes autorisés, données, exports, ouvrages et SIG.</p><p><strong>DNH/DRHK</strong> : modules de suivi, synchronisation, tableaux de bord et rapports. Ouvrages intégrés, SIG décisionnel et couche Restauration désactivés.</p><p>Les autres rôles sont temporairement désactivés.</p></div>;}

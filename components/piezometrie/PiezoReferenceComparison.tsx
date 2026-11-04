@@ -29,7 +29,7 @@ export default function PiezoReferenceComparison() {
   async function load() {
     setLoading(true); setError("");
     try {
-      const response = await fetch("/api/dashboard/module?module=piezometrie", { cache: "no-store" });
+      const response = await authFetch("/api/dashboard/module?module=piezometrie", { cache: "no-store" });
       const payload = await response.json();
       if (!response.ok || payload?.ok === false) throw new Error(payload?.error || "Lecture des observations impossible.");
       setRows(Array.isArray(payload?.data) ? payload.data : []);

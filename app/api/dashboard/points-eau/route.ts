@@ -1,3 +1,5 @@
+import {requireApiRole} from "@/lib/auth-server";
+import {ENABLED_ROLES} from "@/lib/permissions";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -12,7 +14,7 @@ import {
   readPointEauRows,
 } from "@/services/points-eau/analytics";
 
-export async function GET(req: NextRequest) {
+export async function GET(req: NextRequest) {const guard=await requireApiRole(req,[...ENABLED_ROLES]);if(guard.response)return guard.response;
   const { rows: allRows, source } = await readPointEauRows();
   const filteredRows = applyPointEauFilters(allRows, req.nextUrl.searchParams);
   const cleanRows = cleanRowsForPublic(filteredRows);

@@ -3,10 +3,11 @@ import Link from "next/link";
 import {useRole} from "@/components/auth/useRole";
 import {BUILD_LABEL,PUBLIC_MODULE_ITEMS,INTERNAL_ANALYSIS_ITEMS} from "@/lib/navigation";
 export default function DashboardShell({title,subtitle,children}:{title:string;subtitle?:string;children:React.ReactNode}){
- const{loading,authenticated,canAccessDashboard,canAccessObservatoire,canAccessReports,canAccessSigDecisionnel,canManage}=useRole();const items:string[][]=[];
+ const{loading,authenticated,canAccessDashboard,canAccessObservatoire,canAccessReports,canAccessSigDecisionnel,canManage,canSync,canViewInternal,canAccessOuvrages}=useRole();const items:string[][]=[];
  if(!loading&&authenticated&&canAccessDashboard)items.push(["/dashboard","🏠 Dashboard"]);
- PUBLIC_MODULE_ITEMS.forEach(([href,label])=>items.push([href,label]));
- if(!loading&&!authenticated)items.push(["/rapports-publics","📄 Rapports publics"]);
+ if(!loading&&authenticated&&canViewInternal)PUBLIC_MODULE_ITEMS.forEach(([href,label])=>{if(href!=="/ouvrages"||canAccessOuvrages)items.push([href,label]);});
+ if(!loading&&authenticated&&canSync)items.push(["/admin/synchronisation","🔄 Synchronisation"]);
+
  if(!loading&&authenticated&&canAccessSigDecisionnel)INTERNAL_ANALYSIS_ITEMS.forEach(([href,label])=>items.push([href,label]));
  if(!loading&&authenticated&&canAccessObservatoire)items.push(["/observatoire","📈 Observatoire"]);
  if(!loading&&authenticated&&canAccessReports)items.push(["/rapports","📄 Rapports"]);

@@ -1,3 +1,4 @@
+import { checkManagedTarget, checkAssignableRole } from "@/lib/user-management-policy";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -15,6 +16,8 @@ export async function POST(req: NextRequest) {
   const { user_id, role_id, actif } = await req.json();
   if (!user_id) return NextResponse.json({ ok: false, error: "user_id requis." }, { status: 400 });
 
+  const targetDenied=await checkManagedTarget(auth.ctx.role,"id",user_id);if(targetDenied)return targetDenied;
+  if(role_id){const roleDenied=await checkAssignableRole(auth.ctx.role,role_id);if(roleDenied)return roleDenied;}
   const patch: any = { actif: actif !== false };
   if (role_id) patch.role_id = role_id;
 

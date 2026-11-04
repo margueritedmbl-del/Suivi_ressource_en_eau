@@ -1,3 +1,4 @@
+import { checkManagedTarget, checkAssignableRole } from "@/lib/user-management-policy";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -18,6 +19,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "Nouveau mot de passe requis : minimum 8 caractères." }, { status: 400 });
   }
 
+  const targetDenied=await checkManagedTarget(auth.ctx.role,"id",user_id);if(targetDenied)return targetDenied;
   const updated = await supabaseAdmin.auth.admin.updateUserById(user_id, { password, email_confirm: true });
   if (updated.error) return NextResponse.json({ ok: false, error: updated.error.message }, { status: 500 });
 

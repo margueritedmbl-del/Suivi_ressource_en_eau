@@ -1,4 +1,5 @@
 "use client";
+import { authFetch } from "@/lib/auth-client";
 
 import { useEffect, useMemo, useState } from "react";
 import Kpi from "@/components/Kpi";
@@ -67,7 +68,7 @@ export default function PointsEauDashboard() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`/api/dashboard/points-eau${qs ? `?${qs}` : ""}`)
+    authFetch(`/api/dashboard/points-eau${qs ? `?${qs}` : ""}`)
       .then((r) => r.json())
       .then(setJson)
       .finally(() => setLoading(false));

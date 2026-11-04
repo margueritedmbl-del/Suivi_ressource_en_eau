@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { isEnabledRole } from "@/lib/permissions";
 import { useRole } from "@/components/auth/useRole";
 
 export default function RequireAuth({
@@ -14,7 +15,7 @@ export default function RequireAuth({
   redirectTo?: string;
 }) {
   const { loading, authenticated, role } = useRole();
-  const authorized = !allowedRoles?.length || allowedRoles.includes(role);
+  const authorized = isEnabledRole(role) && (!allowedRoles?.length || allowedRoles.includes(role));
 
   useEffect(() => {
     if (!loading && !authenticated) window.location.href = redirectTo;
