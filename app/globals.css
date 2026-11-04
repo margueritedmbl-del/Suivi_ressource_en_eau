@@ -81,3 +81,5 @@
 /* Keep Leaflet panes and controls inside their map stacking context. */
 .map-real,.sig-decision-map,.integrated-assets-map{isolation:isolate;z-index:0}
 .dashboard-shell>*{min-width:0}
+
+.home-overview-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:24px;align-items:start}.home-overview-grid>.panel{min-width:0}.public-hydro-trend .map-tools{display:flex;gap:6px;flex-wrap:wrap}.public-hydro-trend .btn{padding:9px 10px;font-size:13px}.public-hydro-trend .muted{font-size:13px;line-height:1.5}@media(max-width:1000px){.home-overview-grid{grid-template-columns:minmax(0,1fr)}}

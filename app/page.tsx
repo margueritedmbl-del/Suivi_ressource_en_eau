@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import Topbar from "@/components/Topbar";
 import ModuleCard from "@/components/ModuleCard";
-import Link from "next/link";
+import { PublicOverviewProvider } from "@/components/PublicOverviewProvider";
 import PublicStats from "@/components/PublicStats";
 import HomeClientWidgets from "@/components/HomeClientWidgets";
 
@@ -14,10 +14,7 @@ export default function Home(){
           <span className="eyebrow">🌍 eau-ptcs-mali.org • Koulikoro</span>
           <h1>Plateforme de Suivi des Ressources en Eau</h1>
           <p>Données fiables, décisions éclairées, ressources durables. Un portail institutionnel pour collecter, surveiller, analyser et décider à partir des données du PTCS Volet Mali.</p>
-          <div className="hero-actions">
-            <Link href="/login" className="btn btn-primary">Connexion</Link>
-            <Link href="/cartographie" className="btn btn-white">Voir la cartographie</Link>
-          </div>
+
         </div>
         <div>
           <img className="home-visual-poster" src="/visuels/accueil-plateforme-eau.png" alt="Plateforme de Suivi des Ressources en Eau"/>
@@ -38,8 +35,8 @@ export default function Home(){
       </div>
     </section>
 
-    <HomeClientWidgets/>
-    <section className="section"><div className="section-head"><div><h2>Statistiques publiques</h2><p>Données agrégées non sensibles, mises à jour après synchronisation.</p></div></div><PublicStats/></section>
+    <PublicOverviewProvider><HomeClientWidgets/>
+    <section className="section"><div className="section-head"><div><h2>Statistiques publiques</h2><p>Données agrégées non sensibles, mises à jour après synchronisation.</p></div></div><PublicStats/></section></PublicOverviewProvider>
     <footer className="footer">PSORE – PTCS – Enabel – DNH/DRHK | Plateforme de Suivi et d'Observation des Ressources en Eau</footer>
   </div>
 }

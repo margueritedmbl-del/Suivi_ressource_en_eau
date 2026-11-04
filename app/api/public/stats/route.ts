@@ -1,7 +1,7 @@
 export const dynamic="force-dynamic";
 export const revalidate=0;
 export const fetchCache="force-no-store";
+export const runtime="nodejs";
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-admin";
-async function count(t:string){try{const{count}=await supabaseAdmin.from(t).select("*",{count:"exact",head:true});return count||0}catch{return 0}}
-export async function GET(){return NextResponse.json({ok:true,data:{points_eau:await count("points_eau"),pluviometrie:await count("v_pluviometrie_dashboard_v47"),piezometrie:await count("v_piezometrie_dashboard_v47"),limnimetrie:await count("v_limnimetrie_dashboard_v47")}})}
+import { buildPublicOverview } from "@/services/public/overview";
+export async function GET(){const overview=await buildPublicOverview();return NextResponse.json({ok:true,...overview,data:{points_eau:overview.points.count,...Object.fromEntries(Object.entries(overview.modules).map(([m,v])=>[m,v.measurements]))}},{headers:{"Cache-Control":"no-store, max-age=0"}});}

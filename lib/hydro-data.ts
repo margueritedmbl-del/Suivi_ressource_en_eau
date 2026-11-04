@@ -113,7 +113,7 @@ export async function loadHydroRows(module: HydroModule) {
     if(!d || d > today) return false;
     return cutoff ? d >= cutoff : true;
   });
-  return { rows, historicalRows, futureRows, source, rejected, network: networkTotal(module), cutoff };
+  return { rows, historicalRows, futureRows, source, rejected, network: networkTotal(module), cutoff, error: !historicalRows.length && raw.error && view.error ? "Sources hydrologiques indisponibles" : "" };
 }
 
 export async function loadOfficialStations(module: HydroModule) {
